@@ -64,7 +64,7 @@ final class ArchiveReader {
 		} else {
 			$key      = Crypto::unwrapArchiveKey( $hdr, $passphrase );
 			$ssHeader = base64_decode( (string) $hdr['ss'], true );
-			if ( false === $ssHeader || SODIUM_CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_HEADERBYTES !== strlen( $ssHeader ) ) {
+			if ( false === $ssHeader || Crypto::STREAM_HEADERBYTES !== strlen( $ssHeader ) ) {
 				throw new BackupException( 'Malformed archive header.' );
 			}
 			$r->state = sodium_crypto_secretstream_xchacha20poly1305_init_pull( $ssHeader, $key );
@@ -227,7 +227,7 @@ final class ArchiveReader {
 			}
 		}
 		$this->buf .= $payload;
-		if ( SODIUM_CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_TAG_FINAL === $tag ) {
+		if ( Crypto::TAG_FINAL === $tag ) {
 			$this->final = true;
 		}
 		return true;

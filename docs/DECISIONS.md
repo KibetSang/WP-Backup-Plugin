@@ -4,9 +4,8 @@
    site keeps only the public half of an X25519 key; the secret half is shown once as `BBK-` and 14 groups of 4
    (13 for the key, 1 check group that catches typing mistakes). A scheduled backup needs no secret on the server, and a
    break-in cannot read the backups. The passphrase format (Argon2id) stays in the core for tools and tests.
-2. **Destinations in this version: Google Drive, OneDrive and a file server (SFTP/FTPS)**, as asked by the owner.
-   S3-compatible storage and Dropbox from the original brief are left for a later version; the `Destination` interface is ready
-   for them.
+2. **Destinations: Google Drive, OneDrive, Dropbox and a file server (SFTP/FTPS)**, as asked by the owner.
+   S3-compatible storage from the original brief is left for a later version; the `Destination` interface is ready.
 3. **SFTP and FTPS through PHP's curl**, which most hosts have, rather than ext-ssh2 (rare) or ext-ftp. Plain FTP is not
    offered. SFTP requires the host key fingerprint; without it the destination is "not set up".
 4. **The OAuth redirect is a REST route**, and it checks the WordPress login cookie itself (REST requests without a nonce
@@ -33,3 +32,10 @@
     Google allows it for `drive.file`, Microsoft for the app folder. Site owners can still use their own apps.
 12. **When PHP is too old or sodium is off, the plugin stays inactive but keeps its menu**, and the page and an admin
     notice say exactly what is missing (with the site's php.ini path), so it can be found and fixed.
+13. **One-click Connect for OneDrive and Dropbox through a static return page** (docs/connect, GitHub Pages): their
+    shared apps are public clients (PKCE, no secret), and every site has its own address while providers accept only
+    registered ones. The page only forwards to a Bastion Backup callback address (https, or http on localhost) and
+    never sees tokens. Google allows no secret-free web client, so Google keeps the code sign-in (the code is copied
+    for the person).
+14. **libsodium's constants are kept in `Crypto`**: WordPress's sodium_compat does not always declare SODIUM_* constants
+    when the extension is off (a real failure, now guarded by a test).

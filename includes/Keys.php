@@ -25,7 +25,7 @@ final class Keys {
 			return null;
 		}
 		$pub = base64_decode( (string) $k['public'], true );
-		if ( false === $pub || SODIUM_CRYPTO_BOX_PUBLICKEYBYTES !== strlen( $pub ) || ! hash_equals( (string) $k['id'], Crypto::keyId( $pub ) ) ) {
+		if ( false === $pub || Crypto::BOX_PUBLICKEYBYTES !== strlen( $pub ) || ! hash_equals( (string) $k['id'], Crypto::keyId( $pub ) ) ) {
 			return null; // Altered or damaged: treated as missing, so no backup is sealed to an unknown key.
 		}
 		return array(

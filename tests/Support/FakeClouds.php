@@ -65,6 +65,9 @@ final class FakeClouds {
 			--$this->fail503;
 			return bbk_reply( 503, 'busy', array( 'retry-after' => '0' ) );
 		}
+		if ( str_contains( $url, 'dropboxapi.com' ) ) {
+			return $this->dropbox( $url, $h, $body );
+		}
 		return str_contains( $url, 'graph.microsoft.com' ) || str_contains( $url, 'upload.onedrive' ) || str_contains( $url, 'download/od' ) ? $this->graph( $method, $url, $h, $body ) : $this->google( $method, $url, $h, $body );
 	}
 
@@ -83,6 +86,62 @@ final class FakeClouds {
 		}
 		$s['data'] .= $body;
 		return strlen( $s['data'] );
+	}
+
+	/** Dropbox: RPC calls with JSON bodies, content calls with a Dropbox-API-Arg header. */
+	private function dropbox( string $url, array $h, string $body ): array {
+		$path = (string) parse_url( $url, PHP_URL_PATH );
+		$arg  = json_decode( (string) ( $h['dropbox-api-arg'] ?? 'null' ), true );
+		$in   = json_decode( $body, true );
+		$err  = static fn( string $tag, array $extra = array() ): array => bbk_reply( 409, json_encode( array( 'error_summary' => $tag . '/', 'error' => array( '.tag' => $tag ) + $extra ) ) );
+		switch ( $path ) {
+			case '/2/users/get_current_account':
+				return bbk_reply( 200, '{"email":"owner@example.org"}' );
+			case '/2/files/upload_session/start':
+				$id                         = 'sess-' . $this->id();
+				$this->sessions[ 'dbx:' . $id ] = array( 'name' => '', 'size' => -1, 'data' => $body, 'parent' => '' );
+				return bbk_reply( 200, json_encode( array( 'session_id' => $id ) ) );
+			case '/2/files/upload_session/append_v2':
+			case '/2/files/upload_session/finish':
+				$k = 'dbx:' . $arg['cursor']['session_id'];
+				if ( ! isset( $this->sessions[ $k ] ) ) {
+					return $err( 'not_found' );
+				}
+				if ( (int) $arg['cursor']['offset'] !== strlen( $this->sessions[ $k ]['data'] ) ) {
+					return $err( 'incorrect_offset', array( 'correct_offset' => strlen( $this->sessions[ $k ]['data'] ) ) );
+				}
+				$this->sessions[ $k ]['data'] .= $body;
+				if ( str_ends_with( $path, 'finish' ) ) {
+					$id                 = 'id:' . $this->id();
+					$this->files[ $id ] = array( 'name' => basename( $arg['commit']['path'] ), 'data' => $this->sessions[ $k ]['data'], 'parent' => dirname( $arg['commit']['path'] ), 'created' => time() );
+					unset( $this->sessions[ $k ] );
+					return bbk_reply( 200, json_encode( array( 'id' => $id, 'name' => basename( $arg['commit']['path'] ) ) ) );
+				}
+				if ( $this->loseAnswer > 0 ) {
+					--$this->loseAnswer;
+					return bbk_reply( 504, 'answer lost' );
+				}
+				return bbk_reply( 200, 'null' );
+			case '/2/files/list_folder':
+			case '/2/files/list_folder/continue':
+				$folder = isset( $in['cursor'] ) ? explode( '|', (string) $in['cursor'] )[0] : (string) $in['path'];
+				$from   = isset( $in['cursor'] ) ? (int) explode( '|', (string) $in['cursor'] )[1] : 0;
+				$all    = array_values( array_filter( array_map( static fn( $id, $f ) => $f + array( 'id' => $id ), array_keys( $this->files ), $this->files ), static fn( $f ) => $f['parent'] === $folder ) );
+				if ( ! $all && 0 === $from ) {
+					return $err( 'path', array( 'path' => array( '.tag' => 'not_found' ) ) );
+				}
+				$page = array_slice( $all, $from, $this->pageSize );
+				return bbk_reply( 200, json_encode( array( 'entries' => array_map( static fn( $f ) => array( '.tag' => 'file', 'id' => $f['id'], 'name' => $f['name'], 'size' => strlen( $f['data'] ), 'server_modified' => gmdate( 'c', $f['created'] ) ), $page ), 'has_more' => $from + $this->pageSize < count( $all ), 'cursor' => $folder . '|' . ( $from + $this->pageSize ) ) ) );
+			case '/2/files/get_metadata':
+				return isset( $this->files[ $in['path'] ] ) ? bbk_reply( 200, json_encode( array( 'size' => strlen( $this->files[ $in['path'] ]['data'] ) ) ) ) : $err( 'path' );
+			case '/2/files/download':
+				preg_match( '/bytes=(\d+)-(\d+)/', (string) $h['range'], $r );
+				return bbk_reply( 206, substr( $this->files[ $arg['path'] ]['data'], (int) $r[1], (int) $r[2] - (int) $r[1] + 1 ) );
+			case '/2/files/delete_v2':
+				unset( $this->files[ $in['path'] ] );
+				return bbk_reply( 200, '{}' );
+		}
+		return bbk_reply( 404, 'no route ' . $path );
 	}
 
 	private function google( string $method, string $url, array $h, string $body ): array {

@@ -119,7 +119,7 @@ final class ArchiveWriter {
 			$off = 0;
 			$len = strlen( $this->buf );
 			while ( $len - $off >= self::FRAME_PLAIN ) {
-				$this->emit( substr( $this->buf, $off, self::FRAME_PLAIN ), SODIUM_CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_TAG_MESSAGE );
+				$this->emit( substr( $this->buf, $off, self::FRAME_PLAIN ), Crypto::TAG_MESSAGE );
 				$off += self::FRAME_PLAIN;
 			}
 			$this->buf = (string) substr( $this->buf, $off );
@@ -128,7 +128,7 @@ final class ArchiveWriter {
 
 	public function flush(): void {
 		if ( '' !== $this->buf ) {
-			$this->emit( $this->buf, SODIUM_CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_TAG_MESSAGE );
+			$this->emit( $this->buf, Crypto::TAG_MESSAGE );
 			$this->buf = '';
 		}
 		fflush( $this->fh );
@@ -137,7 +137,7 @@ final class ArchiveWriter {
 	/** Write end-of-archive marker and the FINAL frame. */
 	public function finish(): void {
 		$this->record( 'Z', array(), 0 );
-		$this->emit( $this->buf, SODIUM_CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_TAG_FINAL );
+		$this->emit( $this->buf, Crypto::TAG_FINAL );
 		$this->buf = '';
 		fflush( $this->fh );
 		fclose( $this->fh );

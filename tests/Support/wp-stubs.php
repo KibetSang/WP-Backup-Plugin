@@ -487,6 +487,7 @@ function submit_button( mixed ...$a ): void {
 define( 'BASTION_BACKUP_GOOGLE_CLIENT_ID', 'shared-google.apps.googleusercontent.com' );
 define( 'BASTION_BACKUP_GOOGLE_CLIENT_SECRET', 'GOCSPX-not-really-secret' );
 define( 'BASTION_BACKUP_ONEDRIVE_CLIENT_ID', '11111111-2222-3333-4444-555555555555' );
+define( 'BASTION_BACKUP_DROPBOX_APP_KEY', 'shareddropboxkey' );
 
 // The plugin itself.
 require dirname( __DIR__, 2 ) . '/bastion-backup.php';

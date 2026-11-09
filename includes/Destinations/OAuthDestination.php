@@ -100,27 +100,53 @@ abstract class OAuthDestination implements Destination {
 		}
 	}
 
-	/** Step 1: the address to send the administrator to. The state and PKCE verifier are bound to them for 10 minutes. */
-	public function beginConnect( int $userId ): string {
-		if ( ! $this->hasApp() ) {
-			throw new BackupException( 'Enter the client ID and client secret first.' );
+	/**
+	 * "Connect" by signing in at the provider and coming straight back, through the shared app: for providers whose
+	 * apps can be public clients (no secret; PKCE instead). The provider sends the browser to the shared return page
+	 * (Apps::relay()), which only forwards it to this site's own callback.
+	 */
+	public function sharedRedirect(): bool {
+		return false;
+	}
+
+	/**
+	 * Step 1: the address to send the administrator to. The state and PKCE verifier are bound to them for 10 minutes.
+	 * $shared: through the shared app and return page; otherwise the site's own app straight back to this site.
+	 */
+	public function beginConnect( int $userId, bool $shared = false ): string {
+		if ( $shared ) {
+			if ( ! $this->sharedRedirect() || '' === $this->sharedApp()['id'] ) {
+				throw new BackupException( 'Connect with your own app below: the shared app is not set up in this copy of the plugin.' );
+			}
+			$clientId = $this->sharedApp()['id'];
+			$redirect = Apps::relay();
+			// The return page needs to know where to send the browser back: this site's callback, inside the state.
+			$state = rtrim( strtr( base64_encode( (string) wp_json_encode( array( 'r' => self::redirectUri(), 'n' => bin2hex( random_bytes( 24 ) ) ) ) ), '+/', '-_' ), '=' );
+		} else {
+			if ( ! $this->hasApp() ) {
+				throw new BackupException( 'Enter the client ID and client secret first.' );
+			}
+			$clientId = (string) $this->config()['client_id'];
+			$redirect = self::redirectUri();
+			$state    = bin2hex( random_bytes( 32 ) );
 		}
-		$state    = bin2hex( random_bytes( 32 ) );
 		$verifier = rtrim( strtr( base64_encode( random_bytes( 48 ) ), '+/', '-_' ), '=' );
 		set_transient(
 			'bbk_oauth_' . hash( 'sha256', $state ),
 			array(
-				'user' => $userId,
-				'dest' => $this->id(),
-				'v'    => $verifier,
-				'exp'  => time() + 600,
+				'user'     => $userId,
+				'dest'     => $this->id(),
+				'v'        => $verifier,
+				'exp'      => time() + 600,
+				'app'      => $shared ? 'shared' : 'own',
+				'redirect' => $redirect,
 			),
 			600
 		);
 		$params = array_merge(
 			array(
-				'client_id'             => (string) $this->config()['client_id'],
-				'redirect_uri'          => self::redirectUri(),
+				'client_id'             => $clientId,
+				'redirect_uri'          => $redirect,
 				'response_type'         => 'code',
 				'scope'                 => $this->scope(),
 				'state'                 => $state,
@@ -129,31 +155,24 @@ abstract class OAuthDestination implements Destination {
 			),
 			$this->extraAuthParams()
 		);
-		return $this->authorizeUrl() . '?' . http_build_query( $params, '', '&', PHP_QUERY_RFC3986 );
+		return $this->authorizeUrl() . '?' . http_build_query( array_filter( $params, static fn( $v ) => '' !== $v ), '', '&', PHP_QUERY_RFC3986 );
 	}
 
-	/** Step 2 (from the OAuth callback): swap the code for tokens. */
-	public function finishConnect( string $code, string $verifier ): void {
-		$s   = $this->secrets();
-		$res = Http::request(
-			'POST',
-			$this->tokenUrl(),
-			array( 'Content-Type' => 'application/x-www-form-urlencoded' ),
-			http_build_query(
-				array(
-					'grant_type'    => 'authorization_code',
-					'code'          => $code,
-					'client_id'     => (string) $this->config()['client_id'],
-					'client_secret' => (string) ( $s['client_secret'] ?? '' ),
-					'redirect_uri'  => self::redirectUri(),
-					'code_verifier' => $verifier,
-				),
-				'',
-				'&'
-			),
-			30,
-			2
+	/** Step 2 (from the OAuth callback): swap the code for tokens, with the same app and return address as step 1. */
+	public function finishConnect( string $code, string $verifier, string $app = 'own', string $redirect = '' ): void {
+		$s      = $this->secrets();
+		$client = 'shared' === $app ? $this->sharedApp() : array( 'id' => (string) $this->config()['client_id'], 'secret' => (string) ( $s['client_secret'] ?? '' ) );
+		$args   = array(
+			'grant_type'    => 'authorization_code',
+			'code'          => $code,
+			'client_id'     => $client['id'],
+			'redirect_uri'  => '' !== $redirect ? $redirect : self::redirectUri(),
+			'code_verifier' => $verifier,
 		);
+		if ( '' !== $client['secret'] ) {
+			$args['client_secret'] = $client['secret'];
+		}
+		$res = Http::request( 'POST', $this->tokenUrl(), array( 'Content-Type' => 'application/x-www-form-urlencoded' ), http_build_query( $args, '', '&' ), 30, 2 );
 		if ( 200 !== $res['code'] ) {
 			throw Http::fail( 'Connecting the account', $res );
 		}
@@ -161,7 +180,7 @@ abstract class OAuthDestination implements Destination {
 		if ( empty( $t['refresh_token'] ) ) {
 			throw new BackupException( 'The provider did not give a refresh token, so backups could not run unattended. Remove the app\'s access in your account and connect again.' );
 		}
-		$s['app'] = 'own';
+		$s['app'] = 'shared' === $app ? 'shared' : 'own';
 		$this->storeTokens( $s, $t );
 	}
 
@@ -183,7 +202,7 @@ abstract class OAuthDestination implements Destination {
 	 */
 	public function beginDevice( int $userId ): array {
 		$app = $this->sharedApp();
-		if ( '' === $app['id'] ) {
+		if ( '' === $app['id'] || '' === $this->deviceUrl() ) {
 			throw new BackupException( 'Connect with your own app below: the shared app is not set up in this copy of the plugin.' );
 		}
 		$res = Http::request( 'POST', $this->deviceUrl(), array( 'Content-Type' => 'application/x-www-form-urlencoded' ), http_build_query( array( 'client_id' => $app['id'], 'scope' => $this->scope() ), '', '&' ), 30, 2 );

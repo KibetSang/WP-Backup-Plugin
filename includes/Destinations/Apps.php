@@ -22,12 +22,31 @@ final class Apps {
 	public const GOOGLE_CLIENT_ID     = '';
 	public const GOOGLE_CLIENT_SECRET = '';
 	public const ONEDRIVE_CLIENT_ID   = '';
+	public const DROPBOX_APP_KEY      = '';
+
+	/**
+	 * The shared return page for "Connect" with OneDrive and Dropbox: a static page in the plugin's GitHub repository
+	 * (docs/connect/index.html, served by GitHub Pages) that only forwards the browser to the site's own callback.
+	 */
+	public const RELAY_URL = 'https://kibetsang.github.io/WP-Backup-Plugin/connect/';
+
+	public static function relay(): string {
+		return defined( 'BASTION_BACKUP_CONNECT_RELAY' ) ? (string) BASTION_BACKUP_CONNECT_RELAY : self::RELAY_URL;
+	}
 
 	/** @return array{id:string,secret:string} */
 	public static function google(): array {
 		return array(
 			'id'     => defined( 'BASTION_BACKUP_GOOGLE_CLIENT_ID' ) ? (string) BASTION_BACKUP_GOOGLE_CLIENT_ID : self::GOOGLE_CLIENT_ID,
 			'secret' => defined( 'BASTION_BACKUP_GOOGLE_CLIENT_SECRET' ) ? (string) BASTION_BACKUP_GOOGLE_CLIENT_SECRET : self::GOOGLE_CLIENT_SECRET,
+		);
+	}
+
+	/** @return array{id:string,secret:string} */
+	public static function dropbox(): array {
+		return array(
+			'id'     => defined( 'BASTION_BACKUP_DROPBOX_APP_KEY' ) ? (string) BASTION_BACKUP_DROPBOX_APP_KEY : self::DROPBOX_APP_KEY,
+			'secret' => '',
 		);
 	}
 

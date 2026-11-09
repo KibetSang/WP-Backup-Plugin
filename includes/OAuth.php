@@ -35,7 +35,8 @@ final class OAuth {
 		$back = Admin::url( 'destinations' );
 		try {
 			$state = (string) $req->get_param( 'state' );
-			if ( ! preg_match( '/^[a-f0-9]{64}$/', $state ) ) {
+			// Own app: 64 hex. Shared app (through the return page): base64url of {r, n}.
+			if ( ! preg_match( '/^[a-f0-9]{64}$/', $state ) && ! preg_match( '/^[A-Za-z0-9_-]{40,600}$/', $state ) ) {
 				throw new BackupException( 'The connection link is not valid.' );
 			}
 			$key = 'bbk_oauth_' . hash( 'sha256', $state );
@@ -55,7 +56,7 @@ final class OAuth {
 			if ( ! $dest instanceof OAuthDestination ) {
 				throw new BackupException( 'Unknown destination.' );
 			}
-			$dest->finishConnect( (string) $req->get_param( 'code' ), (string) $t['v'] );
+			$dest->finishConnect( (string) $req->get_param( 'code' ), (string) $t['v'], (string) ( $t['app'] ?? 'own' ), (string) ( $t['redirect'] ?? '' ) );
 			wp_set_current_user( (int) $t['user'] );
 			Audit::log( 'destination.connected', $dest->label() . ' ' . $dest->account() );
 			$back = add_query_arg( 'bbk_notice', 'connected-' . $dest->id(), $back );

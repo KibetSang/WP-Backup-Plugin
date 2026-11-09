@@ -21,7 +21,7 @@ final class Ajax {
 
 	private const ACTIONS = array(
 		'tick', 'backup', 'cancel', 'dismiss', 'key', 'list', 'delete', 'check', 'restore_check', 'restore_confirm',
-		'upload_begin', 'upload_piece', 'settings', 'dest_save', 'dest_connect', 'dest_device_start', 'dest_device_poll', 'dest_disconnect', 'dest_test', 'installer',
+		'upload_begin', 'upload_piece', 'settings', 'dest_save', 'dest_connect', 'dest_device_start', 'dest_device_poll', 'dest_disconnect', 'dest_test', 'installer', 'storage',
 	);
 
 	public static function init(): void {
@@ -272,7 +272,7 @@ final class Ajax {
 		if ( ! $d instanceof OAuthDestination ) {
 			throw new BackupException( 'Not an account destination.' );
 		}
-		return array( 'url' => $d->beginConnect( get_current_user_id() ) );
+		return array( 'url' => $d->beginConnect( get_current_user_id(), '1' === self::in( 'shared' ) ) );
 	}
 
 	/** "Connect": a sign-in code for the administrator to enter at Google or Microsoft. */
@@ -317,6 +317,19 @@ final class Ajax {
 			throw new BackupException( $r );
 		}
 		return array( 'message' => __( 'Working: a test file was written and deleted.', 'bastion-backup' ) );
+	}
+
+	/** Where backups are kept on this server (Settings). Moves the backups already made. */
+	private static function doStorage(): array {
+		self::reauth( self::in( 'password' ) );
+		if ( Jobs::running() ) {
+			throw new BackupException( __( 'Wait for the running backup or restore to finish first.', 'bastion-backup' ) );
+		}
+		$r = Storage::move( self::in( 'path' ) );
+		Audit::log( 'storage.moved', $r['root'] );
+		return array(
+			'message' => sprintf( /* translators: 1: folder, 2: moved, 3: left */ __( 'Backups are now kept in %1$s. %2$d moved there%3$s.', 'bastion-backup' ), $r['root'], $r['moved'], $r['left'] ? sprintf( __( '; %d could not be moved and stay in the old folder', 'bastion-backup' ), $r['left'] ) : '' ),
+		) + $r;
 	}
 
 	private static function doInstaller(): array {

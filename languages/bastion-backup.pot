@@ -6,7 +6,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-09 18:27+0000\n"
+"POT-Creation-Date: 2026-11-09 18:41+0000\n"
 "X-Domain: bastion-backup\n"
 
 #: bastion-backup.php:45
@@ -40,7 +40,7 @@ msgstr ""
 msgid "Then reload this page."
 msgstr ""
 
-#: bastion-backup.php:69 bastion-backup.php:70 bastion-backup.php:74 includes/Admin.php:53
+#: bastion-backup.php:69 bastion-backup.php:70 bastion-backup.php:74 includes/Admin.php:54
 msgid "Bastion Backup"
 msgstr ""
 
@@ -48,781 +48,842 @@ msgstr ""
 msgid "Backups start working as soon as the server has what is listed above."
 msgstr ""
 
-#: includes/Admin.php:59 includes/Admin.php:233 includes/SiteHealth.php:29
+#: includes/Admin.php:60 includes/Admin.php:234 includes/SiteHealth.php:29
 msgid "Backups"
 msgstr ""
 
-#: includes/Admin.php:60 includes/Admin.php:301
+#: includes/Admin.php:61 includes/Admin.php:302
 msgid "Restore"
 msgstr ""
 
-#: includes/Admin.php:61
+#: includes/Admin.php:62
 msgid "Destinations"
 msgstr ""
 
-#: includes/Admin.php:62
+#: includes/Admin.php:63
 msgid "Schedule & retention"
 msgstr ""
 
-#: includes/Admin.php:63
+#: includes/Admin.php:64
 msgid "Settings"
 msgstr ""
 
-#: includes/Admin.php:64
+#: includes/Admin.php:65
 msgid "Installer"
 msgstr ""
 
-#: includes/Admin.php:65
+#: includes/Admin.php:66
 msgid "Logs"
 msgstr ""
 
-#: includes/Admin.php:103
+#: includes/Admin.php:104
 msgid "Delete this backup? It cannot be brought back."
 msgstr ""
 
-#: includes/Admin.php:104
+#: includes/Admin.php:105
 msgid "Working…"
 msgstr ""
 
-#: includes/Admin.php:105
+#: includes/Admin.php:106
 msgid "Copied."
 msgstr ""
 
-#: includes/Admin.php:106
+#: includes/Admin.php:107
 msgid "You can close this page: the job carries on in the background and this page picks it up again when you come back."
 msgstr ""
 
-#: includes/Admin.php:114 includes/Ajax.php:37
+#: includes/Admin.php:115 includes/Ajax.php:37
 msgid "You are not allowed to manage backups."
 msgstr ""
 
-#: includes/Admin.php:119
+#: includes/Admin.php:120
 msgid "Encrypted copies of the whole site: WordPress, themes, plugins, uploads and the whole database. Only the backup key opens them, and this site does not have it."
 msgstr ""
 
-#: includes/Admin.php:121
+#: includes/Admin.php:122
 msgid "Bastion Backup sections"
 msgstr ""
 
-#: includes/Admin.php:139
+#: includes/Admin.php:140
 #, php-format
 msgid "%s is connected. Press Test to check it, then choose it under Schedule & retention."
 msgstr ""
 
-#: includes/Admin.php:144
+#: includes/Admin.php:145
 msgid "Connecting did not finish."
 msgstr ""
 
-#: includes/Admin.php:147
+#: includes/Admin.php:148
 #, php-format
 msgid "No backups are made until there is a backup key. <a href=\"%s\">Make the backup key</a>."
 msgstr ""
 
-#: includes/Admin.php:150
+#: includes/Admin.php:151
 msgid "Backups work, but slowly."
 msgstr ""
 
-#: includes/Admin.php:153
+#: includes/Admin.php:154
 #, php-format
 msgid "The PHP that runs this site (%s) does not have the sodium extension loaded, so the encryption uses WordPress's built-in copy of it, about 1,000 times slower (roughly 25 MB a minute)."
 msgstr ""
 
-#: includes/Admin.php:156
+#: includes/Admin.php:157
 #, php-format
 msgid "See <a href=\"%s\">Settings → Server check</a> for what this site's PHP has loaded."
 msgstr ""
 
-#: includes/Admin.php:159
+#: includes/Admin.php:160
 msgid "Backups are stored inside the website's folder, protected by deny rules and an unguessable name. For the strongest setup, define BASTION_BACKUP_STORAGE in wp-config.php as a folder outside the website (see Settings)."
 msgstr ""
 
-#: includes/Admin.php:172 includes/Admin.php:290 includes/SiteHealth.php:18
+#: includes/Admin.php:173 includes/Admin.php:291 includes/SiteHealth.php:18
 msgid "Backup key"
 msgstr ""
 
-#: includes/Admin.php:173
+#: includes/Admin.php:174
 msgid "Backups are encrypted to this key. Only its public half is on this site."
 msgstr ""
 
-#: includes/Admin.php:181
+#: includes/Admin.php:182
 #, php-format
 msgid "Key <b class=\"bbk-ref\">%1$s</b>, made %2$s by %3$s."
 msgstr ""
 
-#: includes/Admin.php:188
+#: includes/Admin.php:189
 msgid "Replace the key…"
 msgstr ""
 
-#: includes/Admin.php:190
+#: includes/Admin.php:191
 msgid "No backup key yet, so no backups are made. Make the key now: it is shown once, for you to keep safe."
 msgstr ""
 
-#: includes/Admin.php:194
+#: includes/Admin.php:195
 #, php-format
 msgid "A new key is used for the backups made from now on. The backups already made still need the old key (%s), so keep it until they are deleted. Replace the key if the old one may have been seen by someone else."
 msgstr ""
 
-#: includes/Admin.php:196 includes/Admin.php:303 includes/Admin.php:477
+#: includes/Admin.php:197 includes/Admin.php:304 includes/Admin.php:459 includes/Admin.php:508
 msgid "Your WordPress password"
 msgstr ""
 
-#: includes/Admin.php:198
+#: includes/Admin.php:199
 msgid "Make a new key"
 msgstr ""
 
-#: includes/Admin.php:198 includes/SiteHealth.php:49
+#: includes/Admin.php:199 includes/SiteHealth.php:49
 msgid "Make the backup key"
 msgstr ""
 
-#: includes/Admin.php:200 includes/Admin.php:305
+#: includes/Admin.php:201 includes/Admin.php:306
 msgid "Cancel"
 msgstr ""
 
-#: includes/Admin.php:207 includes/SiteHealth.php:62
+#: includes/Admin.php:208 includes/SiteHealth.php:62
 msgid "Back up now"
 msgstr ""
 
-#: includes/Admin.php:209
+#: includes/Admin.php:210
 msgid "Make a backup"
 msgstr ""
 
-#: includes/Admin.php:210
-msgid "Large sites are backed up in short steps, so it works on any hosting. The copy to Google Drive, OneDrive or your file server follows straight after."
+#: includes/Admin.php:211
+msgid "Large sites are backed up in short steps, so it works on any hosting. The copy to Google Drive, OneDrive, Dropbox or your file server follows straight after."
 msgstr ""
 
-#: includes/Admin.php:212
+#: includes/Admin.php:213
 msgid "What to back up"
 msgstr ""
 
-#: includes/Admin.php:213 includes/Admin.php:408
+#: includes/Admin.php:214 includes/Admin.php:422
 msgid "Database"
 msgstr ""
 
-#: includes/Admin.php:214
+#: includes/Admin.php:215
 msgid "Files (WordPress, themes, plugins, uploads)"
 msgstr ""
 
-#: includes/Admin.php:215
+#: includes/Admin.php:216
 msgid "Also copy it to"
 msgstr ""
 
-#: includes/Admin.php:224
+#: includes/Admin.php:225
 #, php-format
-msgid "Nowhere yet. <a href=\"%s\">Set up Google Drive, OneDrive or a file server</a> to keep copies off this server."
+msgid "Nowhere yet. <a href=\"%s\">Connect Google Drive, OneDrive, Dropbox or a file server</a> to keep copies off this server."
 msgstr ""
 
-#: includes/Admin.php:237
+#: includes/Admin.php:238
 #, php-format
 msgid "%1$s The newest %2$d are kept on this server.%3$s"
 msgstr ""
 
-#: includes/Admin.php:238
+#: includes/Admin.php:239
 msgid "No backups are scheduled."
 msgstr ""
 
-#: includes/Admin.php:238
+#: includes/Admin.php:239
 #, php-format
 msgid "A backup is made %s."
 msgstr ""
 
-#: includes/Admin.php:240
+#: includes/Admin.php:241
 #, php-format
 msgid "Free space: %s."
 msgstr ""
 
-#: includes/Admin.php:244
+#: includes/Admin.php:245
 msgid "Made"
 msgstr ""
 
-#: includes/Admin.php:244
+#: includes/Admin.php:245
 msgid "Size"
 msgstr ""
 
-#: includes/Admin.php:244
+#: includes/Admin.php:245
 msgid "Kept on"
 msgstr ""
 
-#: includes/Admin.php:244
+#: includes/Admin.php:245
 msgid "Key"
 msgstr ""
 
-#: includes/Admin.php:244
+#: includes/Admin.php:245
 msgid "Check"
 msgstr ""
 
-#: includes/Admin.php:244
+#: includes/Admin.php:245
 msgid "Actions"
 msgstr ""
 
-#: includes/Admin.php:245
+#: includes/Admin.php:246
 msgid "Loading…"
 msgstr ""
 
-#: includes/Admin.php:247
+#: includes/Admin.php:248
 msgid "Refresh"
 msgstr ""
 
-#: includes/Admin.php:251
+#: includes/Admin.php:252
 msgid "Restoring"
 msgstr ""
 
-#: includes/Admin.php:252
+#: includes/Admin.php:253
 msgid "On this site from the Restore tab, or on a new server with the installer (like Duplicator's installer.php)."
 msgstr ""
 
-#: includes/Admin.php:255
+#: includes/Admin.php:256
 msgid "Choose the backup: one in the list above, one on Google Drive, OneDrive or your file server, or a .bbk file from your computer."
 msgstr ""
 
-#: includes/Admin.php:256
+#: includes/Admin.php:257
 msgid "Paste the backup key and press Check. Every part of the backup is read and checked first; nothing on the site changes unless the whole backup is intact."
 msgstr ""
 
-#: includes/Admin.php:257
+#: includes/Admin.php:258
 msgid "See what the backup holds, choose the database, the files or both, and confirm with your WordPress password and the word RESTORE."
 msgstr ""
 
-#: includes/Admin.php:258
+#: includes/Admin.php:259
 msgid "Visitors see a short maintenance page while it runs. The database is swapped in all at once at the end, so the site is never half restored."
 msgstr ""
 
-#: includes/Admin.php:259
+#: includes/Admin.php:260
 #, php-format
 msgid "Site gone or moving server? Use the <a href=\"%s\">installer</a> with the backup file on the new server."
 msgstr ""
 
-#: includes/Admin.php:267
+#: includes/Admin.php:268
 msgid "every hour"
 msgstr ""
 
-#: includes/Admin.php:268
-msgid "twice a day"
-msgstr ""
-
 #: includes/Admin.php:269
-#, php-format
-msgid "every day at %s"
+msgid "twice a day"
 msgstr ""
 
 #: includes/Admin.php:270
 #, php-format
+msgid "every day at %s"
+msgstr ""
+
+#: includes/Admin.php:271
+#, php-format
 msgid "every week at %s"
 msgstr ""
 
-#: includes/Admin.php:278
+#: includes/Admin.php:279
 msgid "1. Choose the backup"
 msgstr ""
 
-#: includes/Admin.php:279
+#: includes/Admin.php:280
 msgid "Pick it from the list of backups, or send a .bbk file from your computer. Large files go up in pieces, so any size works."
 msgstr ""
 
-#: includes/Admin.php:281
+#: includes/Admin.php:282
 #, php-format
 msgid "No backup chosen. Press Restore beside one on the <a href=\"%s\">Backups</a> tab, or upload one:"
 msgstr ""
 
-#: includes/Admin.php:282
+#: includes/Admin.php:283
 msgid "Backup file"
 msgstr ""
 
-#: includes/Admin.php:282
+#: includes/Admin.php:283
 msgid "Upload"
 msgstr ""
 
-#: includes/Admin.php:287
+#: includes/Admin.php:288
 msgid "2. Check it with the key"
 msgstr ""
 
-#: includes/Admin.php:288
+#: includes/Admin.php:289
 msgid "The key that was shown when the backup key was made (BBK-…). It is kept only in this job, encrypted, and forgotten when the job ends."
 msgstr ""
 
-#: includes/Admin.php:292
+#: includes/Admin.php:293
 msgid "Check the backup"
 msgstr ""
 
-#: includes/Admin.php:296
+#: includes/Admin.php:297
 msgid "3. Confirm and restore"
 msgstr ""
 
-#: includes/Admin.php:297
+#: includes/Admin.php:298
 msgid "DISALLOW_FILE_MODS is set in wp-config.php, so only the database can be restored here. Use the installer for files."
 msgstr ""
 
-#: includes/Admin.php:297
+#: includes/Admin.php:298
 msgid "Shown once the backup has been checked."
 msgstr ""
 
-#: includes/Admin.php:301
+#: includes/Admin.php:302
 msgid "The database"
 msgstr ""
 
-#: includes/Admin.php:301
+#: includes/Admin.php:302
 msgid "The files"
 msgstr ""
 
-#: includes/Admin.php:302
+#: includes/Admin.php:303
 msgid "wp-config.php, this plugin and its backups are never overwritten here. After the restore you may need to sign in again."
 msgstr ""
 
-#: includes/Admin.php:304
+#: includes/Admin.php:305
 msgid "Type RESTORE to confirm"
 msgstr ""
 
-#: includes/Admin.php:305
+#: includes/Admin.php:306
 msgid "Restore now"
 msgstr ""
 
-#: includes/Admin.php:317
+#: includes/Admin.php:318
 #, php-format
 msgid "Connected%s."
 msgstr ""
 
-#: includes/Admin.php:317
+#: includes/Admin.php:318
 #, php-format
 msgid "as %s"
 msgstr ""
 
-#: includes/Admin.php:317
+#: includes/Admin.php:318
 msgid "Not connected."
 msgstr ""
 
-#: includes/Admin.php:322
+#: includes/Admin.php:324
 msgid "Backups go into a folder in your Google Drive. The plugin can see only the files it puts there."
 msgstr ""
 
-#: includes/Admin.php:322
+#: includes/Admin.php:325
 msgid "Backups go into Apps → Bastion Backup in your OneDrive. The plugin can see nothing else."
 msgstr ""
 
-#: includes/Admin.php:328
+#: includes/Admin.php:326
+msgid "Backups go into Apps → Bastion Backup in your Dropbox. The plugin can see nothing else."
+msgstr ""
+
+#: includes/Admin.php:334
 #, php-format
 msgid "Connect %s"
 msgstr ""
 
-#: includes/Admin.php:330 includes/Admin.php:360 includes/Admin.php:391
+#: includes/Admin.php:335
+msgid "You sign in and allow access, then come straight back here."
+msgstr ""
+
+#: includes/Admin.php:335
+msgid "Google's sign-in opens in a new tab; paste the code shown here (it is copied for you) and allow access."
+msgstr ""
+
+#: includes/Admin.php:337 includes/Admin.php:374 includes/Admin.php:405
 msgid "Test"
 msgstr ""
 
-#: includes/Admin.php:331 includes/Admin.php:361
+#: includes/Admin.php:338 includes/Admin.php:375
 msgid "Disconnect"
 msgstr ""
 
-#: includes/Admin.php:337
+#: includes/Admin.php:344
+#, php-format
+msgid "One-click \"Connect %s\" is not switched on in this copy of the plugin yet. Until it is, connect it with your own app below (about 10 minutes, once)."
+msgstr ""
+
+#: includes/Admin.php:347
 msgid "Advanced: use your own app instead"
 msgstr ""
 
-#: includes/Admin.php:337
+#: includes/Admin.php:347
 msgid "Set up with your own app (once)"
 msgstr ""
 
-#: includes/Admin.php:339
+#: includes/Admin.php:349
 msgid "Open <a href=\"https://console.cloud.google.com/apis/credentials\" target=\"_blank\" rel=\"noopener noreferrer\">Google Cloud Console → Credentials</a> with the Google account that should hold the backups. Create a project if asked."
 msgstr ""
 
-#: includes/Admin.php:340
+#: includes/Admin.php:350
 msgid "Enable the Google Drive API (APIs & Services → Library → Google Drive API → Enable)."
 msgstr ""
 
-#: includes/Admin.php:341
+#: includes/Admin.php:351
 msgid "OAuth consent screen: External (or Internal for Google Workspace), add your address as a test user, and publish it to Production so access does not expire after 7 days. Scope: …/auth/drive.file only."
 msgstr ""
 
-#: includes/Admin.php:342
+#: includes/Admin.php:352
 msgid "Create credentials → OAuth client ID → Web application. Under Authorized redirect URIs, paste the address below."
 msgstr ""
 
-#: includes/Admin.php:344
-msgid "Open <a href=\"https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade\" target=\"_blank\" rel=\"noopener noreferrer\">Microsoft Entra → App registrations</a> and press New registration."
-msgstr ""
-
-#: includes/Admin.php:345
-msgid "Supported account types: personal Microsoft accounts and/or your organisation. Redirect URI: Web, the address below."
-msgstr ""
-
-#: includes/Admin.php:346
-msgid "API permissions → Microsoft Graph → Delegated: Files.ReadWrite.AppFolder, offline_access, User.Read. Certificates & secrets → New client secret; copy its Value (it is shown once)."
-msgstr ""
-
-#: includes/Admin.php:348
-msgid "Paste the client ID and secret here, save, then press Connect with my app and allow access."
-msgstr ""
-
-#: includes/Admin.php:349
-msgid "Redirect URI"
-msgstr ""
-
-#: includes/Admin.php:349
-msgid "Copy"
-msgstr ""
-
-#: includes/Admin.php:351
-msgid "Client ID"
-msgstr ""
-
-#: includes/Admin.php:352
-msgid "Client secret"
-msgstr ""
-
-#: includes/Admin.php:352 includes/Admin.php:387
-msgid "saved — type to replace"
-msgstr ""
-
-#: includes/Admin.php:353 includes/Admin.php:384
-msgid "Folder"
+#: includes/Admin.php:354
+msgid "Open the <a href=\"https://www.dropbox.com/developers/apps/create\" target=\"_blank\" rel=\"noopener noreferrer\">Dropbox App Console</a>: Scoped access → App folder → give it a name."
 msgstr ""
 
 #: includes/Admin.php:355
-msgid "Tenant"
+msgid "Permissions tab: tick files.metadata.read, files.content.write, files.content.read and account_info.read, then Submit."
 msgstr ""
 
-#: includes/Admin.php:355
-msgid "common for any account, consumers for personal only, or your organisation's tenant ID."
-msgstr ""
-
-#: includes/Admin.php:357 includes/Admin.php:390 includes/Admin.php:417 includes/Admin.php:431
-msgid "Save"
+#: includes/Admin.php:356
+msgid "Settings tab: under OAuth 2 → Redirect URIs, add the address below. Copy the App key and App secret."
 msgstr ""
 
 #: includes/Admin.php:358
+msgid "Open <a href=\"https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade\" target=\"_blank\" rel=\"noopener noreferrer\">Microsoft Entra → App registrations</a> and press New registration."
+msgstr ""
+
+#: includes/Admin.php:359
+msgid "Supported account types: personal Microsoft accounts and/or your organisation. Redirect URI: Web, the address below."
+msgstr ""
+
+#: includes/Admin.php:360
+msgid "API permissions → Microsoft Graph → Delegated: Files.ReadWrite.AppFolder, offline_access, User.Read. Certificates & secrets → New client secret; copy its Value (it is shown once)."
+msgstr ""
+
+#: includes/Admin.php:362
+msgid "Paste the client ID and secret here, save, then press Connect with my app and allow access."
+msgstr ""
+
+#: includes/Admin.php:363
+msgid "Redirect URI"
+msgstr ""
+
+#: includes/Admin.php:363
+msgid "Copy"
+msgstr ""
+
+#: includes/Admin.php:365
+msgid "Client ID"
+msgstr ""
+
+#: includes/Admin.php:366
+msgid "Client secret"
+msgstr ""
+
+#: includes/Admin.php:366 includes/Admin.php:401
+msgid "saved — type to replace"
+msgstr ""
+
+#: includes/Admin.php:367 includes/Admin.php:398 includes/Admin.php:457
+msgid "Folder"
+msgstr ""
+
+#: includes/Admin.php:369
+msgid "Tenant"
+msgstr ""
+
+#: includes/Admin.php:369
+msgid "common for any account, consumers for personal only, or your organisation's tenant ID."
+msgstr ""
+
+#: includes/Admin.php:371 includes/Admin.php:404 includes/Admin.php:431 includes/Admin.php:445
+msgid "Save"
+msgstr ""
+
+#: includes/Admin.php:372
 msgid "Connect with my app"
 msgstr ""
 
-#: includes/Admin.php:374
+#: includes/Admin.php:388
 msgid "Set up."
 msgstr ""
 
-#: includes/Admin.php:374
+#: includes/Admin.php:388
 msgid "Not set up."
 msgstr ""
 
-#: includes/Admin.php:374
+#: includes/Admin.php:388
 msgid "Your own server or NAS, over SFTP (SSH) or FTPS. Plain FTP is not offered: it sends the password unencrypted."
 msgstr ""
 
-#: includes/Admin.php:378
+#: includes/Admin.php:392
 msgid "Connection"
 msgstr ""
 
-#: includes/Admin.php:379
+#: includes/Admin.php:393
 msgid "FTPS (explicit TLS, port 21)"
 msgstr ""
 
-#: includes/Admin.php:379
+#: includes/Admin.php:393
 msgid "FTPS (implicit TLS, port 990)"
 msgstr ""
 
-#: includes/Admin.php:383
+#: includes/Admin.php:397
 msgid "Server"
 msgstr ""
 
-#: includes/Admin.php:383
+#: includes/Admin.php:397
 msgid "Port"
 msgstr ""
 
-#: includes/Admin.php:384
+#: includes/Admin.php:398
 msgid "Without a leading / it is inside the login's home folder. It is made if missing."
 msgstr ""
 
-#: includes/Admin.php:385
+#: includes/Admin.php:399
 msgid "Login"
 msgstr ""
 
-#: includes/Admin.php:386
+#: includes/Admin.php:400
 msgid "Sign in with"
 msgstr ""
 
-#: includes/Admin.php:386 includes/Admin.php:387
+#: includes/Admin.php:400 includes/Admin.php:401
 msgid "Password"
 msgstr ""
 
-#: includes/Admin.php:386
+#: includes/Admin.php:400
 msgid "SSH private key (SFTP)"
 msgstr ""
 
-#: includes/Admin.php:388
+#: includes/Admin.php:402
 msgid "Private key"
 msgstr ""
 
-#: includes/Admin.php:388
+#: includes/Admin.php:402
 msgid "saved — paste to replace"
 msgstr ""
 
-#: includes/Admin.php:388
+#: includes/Admin.php:402
 msgid "Key passphrase (if any)"
 msgstr ""
 
-#: includes/Admin.php:388
+#: includes/Admin.php:402
 msgid "Use a key made only for backups, allowed only into the backup folder."
 msgstr ""
 
-#: includes/Admin.php:389
+#: includes/Admin.php:403
 msgid "Host key fingerprint"
 msgstr ""
 
-#: includes/Admin.php:389
+#: includes/Admin.php:403
 msgid "So a server pretending to be yours is refused. On a computer you trust, run:"
 msgstr ""
 
-#: includes/Admin.php:392
+#: includes/Admin.php:406
 msgid "Remove"
 msgstr ""
 
-#: includes/Admin.php:403
+#: includes/Admin.php:417
 msgid "Back up automatically"
 msgstr ""
 
-#: includes/Admin.php:404
+#: includes/Admin.php:418
 msgid "Never (only when I press Back up now)"
 msgstr ""
 
-#: includes/Admin.php:404
+#: includes/Admin.php:418
 msgid "Every hour"
 msgstr ""
 
-#: includes/Admin.php:404
+#: includes/Admin.php:418
 msgid "Twice a day"
 msgstr ""
 
-#: includes/Admin.php:404
+#: includes/Admin.php:418
 msgid "Every day"
 msgstr ""
 
-#: includes/Admin.php:404
+#: includes/Admin.php:418
 msgid "Every week"
 msgstr ""
 
-#: includes/Admin.php:407
+#: includes/Admin.php:421
 msgid "at"
 msgstr ""
 
-#: includes/Admin.php:407
+#: includes/Admin.php:421
 #, php-format
 msgid "Daily and weekly backups start at this time (%s). WordPress runs scheduled work when the site has visitors; for exact times, have the host call wp-cron.php every few minutes."
 msgstr ""
 
-#: includes/Admin.php:408 includes/Admin.php:505
+#: includes/Admin.php:422 includes/Admin.php:536
 msgid "What"
 msgstr ""
 
-#: includes/Admin.php:408
+#: includes/Admin.php:422
 msgid "Files"
 msgstr ""
 
-#: includes/Admin.php:409
+#: includes/Admin.php:423
 msgid "Copy to"
 msgstr ""
 
-#: includes/Admin.php:411
+#: includes/Admin.php:425
 msgid "not set up"
 msgstr ""
 
-#: includes/Admin.php:414
+#: includes/Admin.php:428
 msgid "Keep on this server"
 msgstr ""
 
-#: includes/Admin.php:414
+#: includes/Admin.php:428
 msgid "Keep copies here at all (when off, a backup is deleted from this server once it is copied elsewhere)"
 msgstr ""
 
-#: includes/Admin.php:415
+#: includes/Admin.php:429
 msgid "Keep at each destination"
 msgstr ""
 
-#: includes/Admin.php:415
+#: includes/Admin.php:429
 msgid "Older ones are deleted after each backup. Only backups this plugin made are ever deleted."
 msgstr ""
 
-#: includes/Admin.php:424
+#: includes/Admin.php:438
 msgid "Leave out"
 msgstr ""
 
-#: includes/Admin.php:424
+#: includes/Admin.php:438
 msgid "One per line: a path from the WordPress folder (wp-content/cache) or a pattern (*.log). This plugin's own backups are always left out."
 msgstr ""
 
-#: includes/Admin.php:425
+#: includes/Admin.php:439
 msgid "Largest file"
 msgstr ""
 
-#: includes/Admin.php:425
+#: includes/Admin.php:439
 msgid "0 for no limit. Larger files are left out and listed in the log."
 msgstr ""
 
-#: includes/Admin.php:426
+#: includes/Admin.php:440
 msgid "Database tables"
 msgstr ""
 
-#: includes/Admin.php:426
+#: includes/Admin.php:440
 #, php-format
 msgid "All tables in the database, not only those starting with %s"
 msgstr ""
 
-#: includes/Admin.php:426
+#: includes/Admin.php:440
 msgid "Leave out these tables (one per line):"
 msgstr ""
 
-#: includes/Admin.php:427
+#: includes/Admin.php:441
 msgid "Step length"
 msgstr ""
 
-#: includes/Admin.php:427
+#: includes/Admin.php:441
 msgid "seconds"
 msgstr ""
 
-#: includes/Admin.php:427
+#: includes/Admin.php:441
 #, php-format
 msgid "How long each step works before saving its place. Never more than 60% of PHP's time limit. Lower it if the host stops long requests."
 msgstr ""
 
-#: includes/Admin.php:428
+#: includes/Admin.php:442
 msgid "Email"
 msgstr ""
 
-#: includes/Admin.php:428
+#: includes/Admin.php:442
 msgid "when a backup fails or has warnings"
 msgstr ""
 
-#: includes/Admin.php:428
+#: includes/Admin.php:442
 msgid "after every backup"
 msgstr ""
 
-#: includes/Admin.php:428
+#: includes/Admin.php:442
 msgid "never"
 msgstr ""
 
-#: includes/Admin.php:429
+#: includes/Admin.php:443
 msgid "Uninstalling"
 msgstr ""
 
-#: includes/Admin.php:429
+#: includes/Admin.php:443
 msgid "Also delete the backups kept on this server when the plugin is deleted"
 msgstr ""
 
-#: includes/Admin.php:434
+#: includes/Admin.php:448
+msgid "Where backups are kept on this server"
+msgstr ""
+
+#: includes/Admin.php:449
+msgid "Every backup is kept here first (and copied to your clouds after). A folder outside the website, beside public_html, is safest: nothing in it can ever be reached from the web."
+msgstr ""
+
+#: includes/Admin.php:452
+msgid "Now:"
+msgstr ""
+
+#: includes/Admin.php:452
+msgid "inside the website"
+msgstr ""
+
+#: includes/Admin.php:452
+msgid "outside the website"
+msgstr ""
+
+#: includes/Admin.php:454
+msgid "Set by BASTION_BACKUP_STORAGE in wp-config.php."
+msgstr ""
+
+#: includes/Admin.php:460
+msgid "Use this folder"
+msgstr ""
+
+#: includes/Admin.php:461
+msgid "Leave it empty to go back to the automatic folder in wp-content. Backups already made are moved."
+msgstr ""
+
+#: includes/Admin.php:465
 msgid "Server check"
 msgstr ""
 
-#: includes/Admin.php:435
+#: includes/Admin.php:466
 msgid "What the PHP that runs this site actually has. A hosting panel can show settings for another PHP version or build."
 msgstr ""
 
-#: includes/Admin.php:439
+#: includes/Admin.php:470
 msgid "OK"
 msgstr ""
 
-#: includes/Admin.php:439
+#: includes/Admin.php:470
 msgid "Slow"
 msgstr ""
 
-#: includes/Admin.php:439
+#: includes/Admin.php:470
 msgid "Needs fixing"
 msgstr ""
 
-#: includes/Admin.php:451
+#: includes/Admin.php:482
 msgid "Stronger setup (wp-config.php)"
 msgstr ""
 
-#: includes/Admin.php:455
+#: includes/Admin.php:486
 msgid "A folder outside the website for backups and working files, e.g. /home/account/bastion-backups."
 msgstr ""
 
-#: includes/Admin.php:456
+#: includes/Admin.php:487
 msgid "A long random value (64+ characters) that encrypts the saved Google, Microsoft and file server credentials, instead of the WordPress salts."
 msgstr ""
 
-#: includes/Admin.php:460
+#: includes/Admin.php:491
 msgid "Set"
 msgstr ""
 
-#: includes/Admin.php:460
+#: includes/Admin.php:491
 msgid "Not set"
 msgstr ""
 
-#: includes/Admin.php:462
+#: includes/Admin.php:493
 #, php-format
 msgid "Backups are kept in %s."
 msgstr ""
 
-#: includes/Admin.php:470
+#: includes/Admin.php:501
 msgid "Installer for a new server"
 msgstr ""
 
-#: includes/Admin.php:471
+#: includes/Admin.php:502
 msgid "A single installer.php that restores a backup on any server with PHP 8.1 and a MySQL database, like Duplicator's. It is locked with an access key shown once, and deletes itself when it has finished."
 msgstr ""
 
-#: includes/Admin.php:474
+#: includes/Admin.php:505
 #, php-format
 msgid "The last installer was made %s. Making a new one makes the old access key useless."
 msgstr ""
 
-#: includes/Admin.php:477
+#: includes/Admin.php:508
 msgid "Make installer.php"
 msgstr ""
 
-#: includes/Admin.php:481
+#: includes/Admin.php:512
 msgid "Disaster recovery in 5 steps"
 msgstr ""
 
-#: includes/Admin.php:485
+#: includes/Admin.php:516
 msgid "On the new server, make an empty database and a database user for it, and point the domain at an empty folder (HTTPS on)."
 msgstr ""
 
-#: includes/Admin.php:486
+#: includes/Admin.php:517
 msgid "Upload installer.php and the .bbk backup file into that folder (downloaded from here, Google Drive, OneDrive or your file server)."
 msgstr ""
 
-#: includes/Admin.php:487
+#: includes/Admin.php:518
 msgid "Open https://<your site>/installer.php and enter the installer's access key."
 msgstr ""
 
-#: includes/Admin.php:488
+#: includes/Admin.php:519
 msgid "Choose the backup, paste the backup key (BBK-…) and the new database details, press Test connection, then Check, then Restore. Nothing is written unless the whole backup is intact."
 msgstr ""
 
-#: includes/Admin.php:489
+#: includes/Admin.php:520
 msgid "Sign in to the restored site. The installer deletes itself and its working folder; if it says it could not, delete installer.php by hand straight away."
 msgstr ""
 
-#: includes/Admin.php:498
+#: includes/Admin.php:529
 msgid "Who did what"
 msgstr ""
 
-#: includes/Admin.php:499
+#: includes/Admin.php:530
 msgid "Every backup, restore, key change, connection and deletion, newest first."
 msgstr ""
 
-#: includes/Admin.php:502
+#: includes/Admin.php:533
 msgid "Nothing yet."
 msgstr ""
 
-#: includes/Admin.php:505
+#: includes/Admin.php:536
 msgid "When"
 msgstr ""
 
-#: includes/Admin.php:505
+#: includes/Admin.php:536
 msgid "Who"
 msgstr ""
 
-#: includes/Admin.php:505
+#: includes/Admin.php:536
 msgid "Details"
 msgstr ""
 
-#: includes/Admin.php:505
+#: includes/Admin.php:536
 msgid "From"
 msgstr ""
 
-#: includes/Admin.php:514
+#: includes/Admin.php:545
 msgid "Latest job"
 msgstr ""
 
-#: includes/Admin.php:518
+#: includes/Admin.php:549
 msgid "No job yet."
 msgstr ""
 
-#: includes/Admin.php:523
+#: includes/Admin.php:554
 msgid "Download the whole log"
 msgstr ""
 
@@ -882,15 +943,29 @@ msgstr ""
 msgid "Working: a test file was written and deleted."
 msgstr ""
 
-#: includes/Ajax.php:335 includes/Ajax.php:352 includes/Ajax.php:364
+#: includes/Ajax.php:326
+msgid "Wait for the running backup or restore to finish first."
+msgstr ""
+
+#: includes/Ajax.php:331
+#, php-format
+msgid "Backups are now kept in %1$s. %2$d moved there%3$s."
+msgstr ""
+
+#: includes/Ajax.php:331
+#, php-format
+msgid "; %d could not be moved and stay in the old folder"
+msgstr ""
+
+#: includes/Ajax.php:348 includes/Ajax.php:365 includes/Ajax.php:377
 msgid "Not allowed."
 msgstr ""
 
-#: includes/Ajax.php:344
+#: includes/Ajax.php:357
 msgid "That backup is no longer on this server."
 msgstr ""
 
-#: includes/Ajax.php:369
+#: includes/Ajax.php:382
 msgid "No such log."
 msgstr ""
 

@@ -29,7 +29,7 @@ final class Admin {
 
 	/** The destination's logo (Google Drive and OneDrive: their own; the file server: a WordPress icon). */
 	public static function brand( string $id, int $size = 20 ): string {
-		$file = array( 'google' => 'google-drive.png', 'onedrive' => 'onedrive.png' )[ $id ] ?? '';
+		$file = array( 'google' => 'google-drive.png', 'onedrive' => 'onedrive.png', 'dropbox' => 'dropbox.png' )[ $id ] ?? '';
 		if ( '' === $file ) {
 			return sprintf( '<span class="dashicons dashicons-networking bbk-brand" style="font-size:%1$dpx;width:%1$dpx;height:%1$dpx" aria-hidden="true"></span>', $size );
 		}
@@ -41,6 +41,7 @@ final class Admin {
 		return array(
 			'google'   => plugins_url( 'assets/brands/google-drive.png', BASTION_BACKUP_FILE ),
 			'onedrive' => plugins_url( 'assets/brands/onedrive.png', BASTION_BACKUP_FILE ),
+			'dropbox'  => plugins_url( 'assets/brands/dropbox.png', BASTION_BACKUP_FILE ),
 		);
 	}
 
@@ -207,7 +208,7 @@ final class Admin {
 		$actions = '<button type="button" class="button button-primary" data-bbk="backup"' . ( $key ? '' : ' disabled' ) . '>' . esc_html__( 'Back up now', 'bastion-backup' ) . '</button>';
 		self::panel(
 			__( 'Make a backup', 'bastion-backup' ),
-			esc_html__( 'Large sites are backed up in short steps, so it works on any hosting. The copy to Google Drive, OneDrive or your file server follows straight after.', 'bastion-backup' ),
+			esc_html__( 'Large sites are backed up in short steps, so it works on any hosting. The copy to Google Drive, OneDrive, Dropbox or your file server follows straight after.', 'bastion-backup' ),
 			static function () use ( $s ): void {
 				echo '<fieldset class="bbk-choices"><legend class="screen-reader-text">' . esc_html__( 'What to back up', 'bastion-backup' ) . '</legend>';
 				printf( '<label><input type="checkbox" id="bbk-c-db" %s> %s</label>', checked( $s['backup_db'], true, false ), esc_html__( 'Database', 'bastion-backup' ) );
@@ -221,7 +222,7 @@ final class Admin {
 					}
 				}
 				if ( ! $any ) {
-					echo '<span class="description">' . wp_kses( sprintf( /* translators: %s: link */ __( 'Nowhere yet. <a href="%s">Set up Google Drive, OneDrive or a file server</a> to keep copies off this server.', 'bastion-backup' ), esc_url( self::url( 'destinations' ) ) ), array( 'a' => array( 'href' => true ) ) ) . '</span>';
+					echo '<span class="description">' . wp_kses( sprintf( /* translators: %s: link */ __( 'Nowhere yet. <a href="%s">Connect Google Drive, OneDrive, Dropbox or a file server</a> to keep copies off this server.', 'bastion-backup' ), esc_url( self::url( 'destinations' ) ) ), array( 'a' => array( 'href' => true ) ) ) . '</span>';
 				}
 				echo '</fieldset>';
 			},
@@ -310,7 +311,7 @@ final class Admin {
 
 	private static function tabDestinations(): void {
 		$redirect = OAuthDestination::redirectUri();
-		foreach ( array( 'google', 'onedrive' ) as $id ) {
+		foreach ( array( 'google', 'onedrive', 'dropbox' ) as $id ) {
 			/** @var OAuthDestination $d */
 			$d     = Registry::get( $id );
 			$c     = $d->config();
@@ -319,19 +320,28 @@ final class Admin {
 				$d->label(),
 				'<span class="bbk-badge ' . ( $d->isConnected() ? 'ok' : '' ) . '">' . esc_html( $state ) . '</span>',
 				static function () use ( $d, $c, $id, $redirect ): void {
-					$where = 'google' === $id ? __( 'Backups go into a folder in your Google Drive. The plugin can see only the files it puts there.', 'bastion-backup' ) : __( 'Backups go into Apps → Bastion Backup in your OneDrive. The plugin can see nothing else.', 'bastion-backup' );
+					$where = array(
+						'google'   => __( 'Backups go into a folder in your Google Drive. The plugin can see only the files it puts there.', 'bastion-backup' ),
+						'onedrive' => __( 'Backups go into Apps → Bastion Backup in your OneDrive. The plugin can see nothing else.', 'bastion-backup' ),
+						'dropbox'  => __( 'Backups go into Apps → Bastion Backup in your Dropbox. The plugin can see nothing else.', 'bastion-backup' ),
+					)[ $id ];
+					$redirectConnect = $d->sharedRedirect() && $d->hasShared();
 					echo '<div class="bbk-dest-form" data-dest="' . esc_attr( $id ) . '">';
 					if ( $d->hasShared() ) {
 						echo '<p>' . esc_html( $where ) . '</p>';
 						echo '<p class="bbk-buttons">';
 						if ( ! $d->isConnected() ) {
-							printf( '<button type="button" class="button button-hero bbk-connect" data-bbk="device">%s%s</button> ', self::brand( $id, 24 ), esc_html( sprintf( /* translators: %s: Google Drive or OneDrive */ __( 'Connect %s', 'bastion-backup' ), $d->label() ) ) );
+							printf( '<button type="button" class="button button-hero bbk-connect" data-bbk="%s">%s%s</button> ', $redirectConnect ? 'connect-shared' : 'device', self::brand( $id, 24 ), esc_html( sprintf( /* translators: %s: Google Drive, OneDrive or Dropbox */ __( 'Connect %s', 'bastion-backup' ), $d->label() ) ) );
+							echo '<span class="description">' . esc_html( $redirectConnect ? __( 'You sign in and allow access, then come straight back here.', 'bastion-backup' ) : __( 'Google\'s sign-in opens in a new tab; paste the code shown here (it is copied for you) and allow access.', 'bastion-backup' ) ) . '</span> ';
 						} else {
 							echo '<button type="button" class="button" data-bbk="test">' . esc_html__( 'Test', 'bastion-backup' ) . '</button> ';
 							echo '<button type="button" class="button bbk-danger" data-bbk="disconnect">' . esc_html__( 'Disconnect', 'bastion-backup' ) . '</button> ';
 						}
 						echo '<span class="bbk-result" aria-live="polite"></span></p>';
 						echo '<div class="bbk-device" hidden></div>';
+					}
+					if ( ! $d->hasShared() && ! $d->isConnected() ) {
+						echo '<p>' . esc_html( $where ) . '</p><p class="description">' . esc_html( sprintf( /* translators: %s: service */ __( 'One-click "Connect %s" is not switched on in this copy of the plugin yet. Until it is, connect it with your own app below (about 10 minutes, once).', 'bastion-backup' ), $d->label() ) ) . '</p>';
 					}
 					echo '</div>';
 					echo '<details class="bbk-howto"' . ( $d->hasShared() || $d->hasApp() ? '' : ' open' ) . '><summary>' . esc_html( $d->hasShared() ? __( 'Advanced: use your own app instead', 'bastion-backup' ) : __( 'Set up with your own app (once)', 'bastion-backup' ) ) . '</summary><ol>';
@@ -340,6 +350,10 @@ final class Admin {
 						echo '<li>' . esc_html__( 'Enable the Google Drive API (APIs & Services → Library → Google Drive API → Enable).', 'bastion-backup' ) . '</li>';
 						echo '<li>' . esc_html__( 'OAuth consent screen: External (or Internal for Google Workspace), add your address as a test user, and publish it to Production so access does not expire after 7 days. Scope: …/auth/drive.file only.', 'bastion-backup' ) . '</li>';
 						echo '<li>' . esc_html__( 'Create credentials → OAuth client ID → Web application. Under Authorized redirect URIs, paste the address below.', 'bastion-backup' ) . '</li>';
+					} elseif ( 'dropbox' === $id ) {
+						echo '<li>' . wp_kses( __( 'Open the <a href="https://www.dropbox.com/developers/apps/create" target="_blank" rel="noopener noreferrer">Dropbox App Console</a>: Scoped access → App folder → give it a name.', 'bastion-backup' ), array( 'a' => array( 'href' => true, 'target' => true, 'rel' => true ) ) ) . '</li>';
+						echo '<li>' . esc_html__( 'Permissions tab: tick files.metadata.read, files.content.write, files.content.read and account_info.read, then Submit.', 'bastion-backup' ) . '</li>';
+						echo '<li>' . esc_html__( 'Settings tab: under OAuth 2 → Redirect URIs, add the address below. Copy the App key and App secret.', 'bastion-backup' ) . '</li>';
 					} else {
 						echo '<li>' . wp_kses( __( 'Open <a href="https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank" rel="noopener noreferrer">Microsoft Entra → App registrations</a> and press New registration.', 'bastion-backup' ), array( 'a' => array( 'href' => true, 'target' => true, 'rel' => true ) ) ) . '</li>';
 						echo '<li>' . esc_html__( 'Supported account types: personal Microsoft accounts and/or your organisation. Redirect URI: Web, the address below.', 'bastion-backup' ) . '</li>';
@@ -350,7 +364,7 @@ final class Admin {
 					echo '<form class="bbk-dest-form" data-dest="' . esc_attr( $id ) . '"><table class="form-table" role="presentation"><tbody>';
 					printf( '<tr><th scope="row"><label for="bbk-%1$s-cid">%2$s</label></th><td><input id="bbk-%1$s-cid" name="client_id" class="regular-text code" value="%3$s" autocomplete="off"></td></tr>', esc_attr( $id ), esc_html__( 'Client ID', 'bastion-backup' ), esc_attr( (string) ( $c['client_id'] ?? '' ) ) );
 					printf( '<tr><th scope="row"><label for="bbk-%1$s-sec">%2$s</label></th><td><input id="bbk-%1$s-sec" name="client_secret" type="password" class="regular-text code" autocomplete="new-password" placeholder="%3$s"></td></tr>', esc_attr( $id ), esc_html__( 'Client secret', 'bastion-backup' ), esc_attr( $d->hasApp() ? '•••••••• ' . __( 'saved — type to replace', 'bastion-backup' ) : '' ) );
-					printf( '<tr><th scope="row"><label for="bbk-%1$s-folder">%2$s</label></th><td><input id="bbk-%1$s-folder" name="folder" class="regular-text" value="%3$s" placeholder="%4$s"></td></tr>', esc_attr( $id ), esc_html__( 'Folder', 'bastion-backup' ), esc_attr( (string) ( $c['folder'] ?? '' ) ), esc_attr( $d instanceof Destinations\GoogleDrive || $d instanceof Destinations\OneDrive ? $d->folderName() : '' ) );
+					printf( '<tr><th scope="row"><label for="bbk-%1$s-folder">%2$s</label></th><td><input id="bbk-%1$s-folder" name="folder" class="regular-text" value="%3$s" placeholder="%4$s"></td></tr>', esc_attr( $id ), esc_html__( 'Folder', 'bastion-backup' ), esc_attr( (string) ( $c['folder'] ?? '' ) ), esc_attr( $d instanceof Destinations\GoogleDrive || $d instanceof Destinations\OneDrive || $d instanceof Destinations\Dropbox ? $d->folderName() : '' ) );
 					if ( 'onedrive' === $id ) {
 						printf( '<tr><th scope="row"><label for="bbk-od-tenant">%s</label></th><td><input id="bbk-od-tenant" name="tenant" class="regular-text code" value="%s" placeholder="common"><p class="description">%s</p></td></tr>', esc_html__( 'Tenant', 'bastion-backup' ), esc_attr( (string) ( $c['tenant'] ?? '' ) ), esc_html__( 'common for any account, consumers for personal only, or your organisation\'s tenant ID.', 'bastion-backup' ) );
 					}
@@ -430,6 +444,23 @@ final class Admin {
 		echo '</tbody></table>';
 		submit_button( __( 'Save', 'bastion-backup' ) );
 		echo '</form>';
+		self::panel(
+			__( 'Where backups are kept on this server', 'bastion-backup' ),
+			esc_html__( 'Every backup is kept here first (and copied to your clouds after). A folder outside the website, beside public_html, is safest: nothing in it can ever be reached from the web.', 'bastion-backup' ),
+			static function (): void {
+				$fixed = defined( 'BASTION_BACKUP_STORAGE' ) && '' !== (string) BASTION_BACKUP_STORAGE;
+				echo '<p>' . esc_html__( 'Now:', 'bastion-backup' ) . ' <code>' . esc_html( Storage::root() ) . '</code> ' . ( Storage::publicPath() ? '<span class="bbk-badge warn">' . esc_html__( 'inside the website', 'bastion-backup' ) . '</span>' : '<span class="bbk-badge ok">' . esc_html__( 'outside the website', 'bastion-backup' ) . '</span>' ) . '</p>';
+				if ( $fixed ) {
+					echo '<p class="description">' . esc_html__( 'Set by BASTION_BACKUP_STORAGE in wp-config.php.', 'bastion-backup' ) . '</p>';
+					return;
+				}
+				echo '<form id="bbk-storage-form" class="bbk-inline-form"><label for="bbk-st-path" class="screen-reader-text">' . esc_html__( 'Folder', 'bastion-backup' ) . '</label>';
+				echo '<input id="bbk-st-path" class="large-text code" value="' . esc_attr( Storage::publicPath() ? Storage::suggestedOutside() : Storage::root() ) . '" spellcheck="false"> ';
+				echo '<label for="bbk-st-pw">' . esc_html__( 'Your WordPress password', 'bastion-backup' ) . '</label> <input type="password" id="bbk-st-pw" class="regular-text" autocomplete="current-password" required> ';
+				echo '<button class="button button-primary">' . esc_html__( 'Use this folder', 'bastion-backup' ) . '</button> <span class="bbk-result" aria-live="polite"></span></form>';
+				echo '<p class="description">' . esc_html__( 'Leave it empty to go back to the automatic folder in wp-content. Backups already made are moved.', 'bastion-backup' ) . '</p>';
+			}
+		);
 		self::panel(
 			__( 'Server check', 'bastion-backup' ),
 			esc_html__( 'What the PHP that runs this site actually has. A hosting panel can show settings for another PHP version or build.', 'bastion-backup' ),

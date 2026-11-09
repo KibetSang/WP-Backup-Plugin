@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-SSoOkfY5ZwXZNwp1+z7E24eietfdQRqh+Ruhv8JUHNg='; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>Bastion Backup: connecting</title>
+<style>
+body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f0f0f1;color:#1d2327}
+main{max-width:520px;margin:12vh auto;padding:24px;background:#fff;border:1px solid #c3c4c7}
+h1{font-size:20px;margin:0 0 8px}p{margin:8px 0}.err{color:#b32d2e}
+</style>
+</head>
+<body>
+<main>
+<h1>Bastion Backup</h1>
+<p id="msg">Taking you back to your site…</p>
+</main>
+<script>
+/*
+ * The shared return page for "Connect" (OneDrive, Dropbox). Every WordPress site has its own address, so the provider
+ * sends the browser here, and this page sends it straight on to the site that started the sign-in, which the site
+ * wrote into "state". It only ever forwards to a Bastion Backup callback address, keeps nothing, loads nothing, and the
+ * code it passes on is useless without the secret the site kept (PKCE).
+ */
+(function () {
+	var q = new URLSearchParams(location.search);
+	var msg = document.getElementById('msg');
+	function fail(t) { msg.textContent = t; msg.className = 'err'; }
+	var state = q.get('state') || '';
+	var to;
+	try {
+		var b = state.replace(/-/g, '+').replace(/_/g, '/');
+		to = JSON.parse(atob(b + '==='.slice((b.length + 3) % 4))).r;
+	} catch (e) {
+		return fail('This sign-in link is not valid. Go back to your site and press Connect again.');
+	}
+	var u;
+	try { u = new URL(to); } catch (e) { return fail('This sign-in link is not valid.'); }
+	var local = u.hostname === 'localhost' || u.hostname === '127.0.0.1';
+	var callback = /\/wp-json\/bastion-backup\/v1\/oauth\/?$/.test(u.pathname) || (u.searchParams.get('rest_route') || '').replace(/\/$/, '') === '/bastion-backup/v1/oauth';
+	if ((u.protocol !== 'https:' && !(local && u.protocol === 'http:')) || !callback || u.username || u.password) {
+		return fail('This sign-in link does not lead back to a Bastion Backup site, so it was stopped.');
+	}
+	['code', 'state', 'error', 'error_description'].forEach(function (k) {
+		if (q.get(k) !== null) { u.searchParams.set(k, q.get(k)); }
+	});
+	msg.textContent = 'Taking you back to ' + u.host + '…';
+	location.replace(u.toString());
+})();
+</script>
+</body>
+</html>

@@ -18,6 +18,7 @@ final class Registry {
 		return array(
 			'google'     => GoogleDrive::class,
 			'onedrive'   => OneDrive::class,
+			'dropbox'    => Dropbox::class,
 			'fileserver' => FileServer::class,
 		);
 	}

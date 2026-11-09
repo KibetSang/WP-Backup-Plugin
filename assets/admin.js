@@ -97,6 +97,58 @@
 		return ( { backup: 'Backup', restore: s.params && s.params.verify_only ? 'Check' : 'Restore' } )[ s.type ] || 'Job';
 	}
 
+	/** The job's steps as a checklist: done, now, to come. */
+	function steps( s ) {
+		const p = s.params || {};
+		let list;
+		if ( s.type === 'backup' ) {
+			list = [];
+			if ( p.db ) {
+				list.push( [ 'db', 'Database', [ 'init', 'db' ] ] );
+			}
+			if ( p.files ) {
+				list.push( [ 'files', 'Files', [ 'scan', 'files' ] ] );
+			}
+			( p.dests || [] ).forEach( ( d ) => list.push( [ 'up-' + d, 'Copy to ' + ( ( D.dests[ d ] || {} ).label || d ), [ 'upload:' + d ] ] ) );
+			list.push( [ 'end', 'Finish', [ 'finalize', 'retain' ] ] );
+		} else if ( p.verify_only ) {
+			list = [ [ 'get', 'Get the backup', [ 'init', 'acquire' ] ], [ 'check', 'Check every part', [ 'verify' ] ] ];
+		} else {
+			list = [ [ 'get', 'Get the backup', [ 'init', 'acquire' ] ], [ 'check', 'Check every part', [ 'verify' ] ], [ 'ok', 'Your confirmation', [ 'ready' ] ], [ 'put', 'Restore', [ 'prepare', 'restore' ] ], [ 'end', 'Finish', [ 'replace', 'swap' ] ] ];
+		}
+		let phase = s.phase;
+		if ( phase === 'upload' ) {
+			const m = ( s.message || '' ).match( /^Copying to (.+?):/ );
+			const id = m && Object.keys( D.dests ).find( ( k ) => D.dests[ k ].label === m[ 1 ] );
+			phase = 'upload:' + ( id || ( p.dests || [] )[ 0 ] );
+		}
+		const at = list.findIndex( ( x ) => x[ 2 ].includes( phase ) );
+		return '<ol class="bbk-phases">' + list.map( ( x, i ) => {
+			const st = s.finished && ! s.error && ! s.cancelled ? 'done' : i < at ? 'done' : i === at ? ( s.error ? 'fail' : 'now' ) : '';
+			return '<li class="' + st + '"><span class="dashicons ' + ( st === 'done' ? 'dashicons-yes-alt' : st === 'now' ? 'dashicons-update' : st === 'fail' ? 'dashicons-dismiss' : 'dashicons-marker' ) + '" aria-hidden="true"></span>' + h( x[ 1 ] ) + ( st === 'now' ? '<span class="screen-reader-text"> (now)</span>' : '' ) + '</li>';
+		} ).join( '' ) + '</ol>';
+	}
+
+	/** Time left, from how fast the percentage has been moving. */
+	const samples = [];
+	function eta( s ) {
+		if ( ! s || s.finished || s.waiting || ! s.percent ) {
+			samples.length = 0;
+			return '';
+		}
+		samples.push( [ Date.now(), s.percent ] );
+		while ( samples.length > 2 && samples[ 0 ][ 0 ] < Date.now() - 120000 ) {
+			samples.shift();
+		}
+		const [ t0, p0 ] = samples[ 0 ];
+		const rate = ( s.percent - p0 ) / ( ( Date.now() - t0 ) / 1000 );
+		if ( samples.length < 4 || rate <= 0 ) {
+			return '';
+		}
+		const left = ( 100 - s.percent ) / rate;
+		return left < 60 ? 'less than a minute left' : left < 3600 ? 'about ' + Math.round( left / 60 ) + ' minute' + ( Math.round( left / 60 ) === 1 ? '' : 's' ) + ' left' : 'about ' + ( left / 3600 ).toFixed( 1 ) + ' hours left';
+	}
+
 	function renderJob() {
 		const box = $( '#bbk-job' );
 		if ( ! box ) {
@@ -110,9 +162,10 @@
 		box.hidden = false;
 		const running = ! s.finished;
 		const cls = s.error ? 'error' : s.cancelled ? 'warning' : s.finished ? ( s.warnings && s.warnings.length ? 'warning' : 'success' ) : 'info';
-		let html = '<div class="notice notice-' + cls + ' inline bbk-jobbox"><div class="bbk-jobhead"><strong>' + h( phaseName( s ) ) + '</strong> <span>' + h( s.message || '' ) + '</span></div>';
+		let html = '<div class="notice notice-' + cls + ' inline bbk-jobbox"><div class="bbk-jobhead"><strong>' + h( phaseName( s ) ) + '</strong> <span>' + h( s.message || '' ) + '</span></div>' + steps( s );
 		if ( running && ! s.waiting ) {
-			html += '<progress max="100" value="' + ( s.percent || 0 ) + '" aria-label="Progress">' + ( s.percent || 0 ) + '%</progress> <span class="bbk-pct">' + ( s.percent || 0 ) + '%</span>';
+			const left = eta( s );
+			html += '<progress max="100" value="' + ( s.percent || 0 ) + '" aria-label="Progress">' + ( s.percent || 0 ) + '%</progress> <span class="bbk-pct">' + ( s.percent || 0 ) + '%' + ( s.bytes_total ? ' · ' + h( size( s.bytes_done || 0 ) ) + ' of ' + h( size( s.bytes_total ) ) : '' ) + ( left ? ' · ' + h( left ) : '' ) + '</span>';
 			html += '<p class="description">' + h( D.i18n.bgNote ) + ( s.stale ? ' <b>No progress for a few minutes: this page is now pushing it on.</b>' : '' ) + '</p>';
 		}
 		if ( s.finished && s.result && s.type === 'backup' && ! s.error ) {
@@ -406,6 +459,10 @@
 			} else if ( what === 'connect' ) {
 				const r = await api( 'dest_connect', { dest: form.dataset.dest } );
 				location.href = r.url;
+			} else if ( what === 'connect-shared' ) {
+				b.disabled = true;
+				const r = await api( 'dest_connect', { dest: form.dataset.dest, shared: '1' } );
+				location.href = r.url;
 			} else if ( what === 'device' ) {
 				await connectDevice( b, form, out );
 			} else if ( what === 'test' ) {
@@ -444,6 +501,12 @@
 		dv.hidden = false;
 		btn.hidden = true;
 		$( '#bbk-dev-copy' ).onclick = () => navigator.clipboard.writeText( r.code ).then( () => notice( D.i18n.copied, 'success' ) );
+		// Copied for the person, so they only paste it on the sign-in page that opens.
+		try {
+			await navigator.clipboard.writeText( r.code );
+		} catch ( e ) {
+			/* The page may not be allowed to write the clipboard: the code is shown to copy by hand. */
+		}
 		window.open( r.url, '_blank', 'noopener' );
 		const until = Date.now() + r.expires_in * 1000;
 		try {
@@ -495,6 +558,10 @@
 				started( await api( 'restore_confirm', { password: $( '#bbk-r-pw' ).value, confirm: $( '#bbk-r-word' ).value, db: $( '#bbk-r-db' ).checked ? '1' : '0', files: $( '#bbk-r-files' ).checked ? '1' : '0' } ) );
 				$( '#bbk-r-pw' ).value = '';
 				sessionStorage.removeItem( 'bbk-source' );
+			} else if ( f.id === 'bbk-storage-form' ) {
+				const r = await api( 'storage', { path: $( '#bbk-st-path' ).value, password: $( '#bbk-st-pw' ).value } );
+				flash( out, r.message, true );
+				setTimeout( () => location.reload(), 1500 );
 			} else if ( f.id === 'bbk-inst-form' ) {
 				const r = await api( 'installer', { password: $( '#bbk-inst-pw' ).value } );
 				const box = $( '#bbk-inst-made' );

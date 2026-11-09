@@ -24,7 +24,7 @@ defined( 'ABSPATH' ) || exit;
 final class RestoreJob implements Job {
 
 	/** Options this plugin puts back after the database is swapped, so its settings and connections survive. */
-	private const OWN = array( Settings::OPTION, Settings::DEST_OPTION, Vault::OPTION, Keys::OPTION, 'bastion_backup_dir_suffix', Audit::OPTION, 'bastion_backup_installer' );
+	private const OWN = array( Settings::OPTION, Settings::DEST_OPTION, Vault::OPTION, Keys::OPTION, 'bastion_backup_dir_suffix', Storage::DIR_OPTION, Audit::OPTION, 'bastion_backup_installer' );
 
 	public function step( array &$st, float $deadline, Logger $log ): void {
 		while ( empty( $st['done'] ) && empty( $st['waiting'] ) && microtime( true ) < $deadline ) {

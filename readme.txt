@@ -1,10 +1,10 @@
 === Bastion Backup ===
 Contributors: kibetsang
-Tags: backup, restore, migration, google drive, onedrive
+Tags: backup, restore, migration, google drive, dropbox
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,7 +18,7 @@ Bastion Backup makes a complete backup of your WordPress site: WordPress itself,
 
 **Any size, any host.** Backups and restores run in short steps (20 seconds by default) that save their place, with memory near 32 MB whatever the size of the site. Tested at 10 GB with memory_limit=128M. They carry on in the background when you close the page, and WP-CLI runs them without a browser.
 
-**Copies elsewhere.** Press Connect and sign in: after each backup a copy goes to Google Drive (access only to files this plugin makes), OneDrive (the plugin's own app folder only) or your own server over SFTP or FTPS. Uploads resume where they stopped. The newest N are kept in each place; only backups this plugin made are ever deleted.
+**Copies elsewhere.** Press Connect and sign in: after each backup a copy goes to Google Drive (access only to files this plugin makes), OneDrive or Dropbox (the plugin's own app folder only) or your own server over SFTP or FTPS. Uploads resume where they stopped. The newest N are kept in each place; only backups this plugin made are ever deleted.
 
 **Safe restores.** A restore first reads and checks every byte of the backup and changes nothing unless all of it is intact. You confirm with your WordPress password and the word RESTORE. The database is loaded into temporary tables and swapped in at once at the end; files are written beside the old ones and renamed into place. wp-config.php, this plugin and its backups are never overwritten from the dashboard.
 
@@ -36,15 +36,15 @@ Bastion Backup makes a complete backup of your WordPress site: WordPress itself,
 * `define( 'BASTION_BACKUP_STORAGE', '/home/account/bastion-backups' );` keeps backups and working files outside the website.
 * `define( 'BASTION_BACKUP_SECRET', '…64 or more random characters…' );` encrypts the saved Google, Microsoft and file server credentials with this value instead of the WordPress salts.
 
-= Google Drive and OneDrive =
+= Google Drive, OneDrive and Dropbox =
 
-1. Bastion Backup → Destinations → **Connect Google Drive** (or **Connect OneDrive**).
-2. A sign-in page opens (google.com/device or microsoft.com/devicelogin). Sign in with the account that should keep the backups and enter the code the plugin shows.
-3. Allow access. The Destinations page notices by itself. Press Test, then choose it under Schedule & retention.
+1. Bastion Backup → Destinations → **Connect OneDrive** or **Connect Dropbox**: sign in, allow access, and you come straight back, connected.
+2. **Connect Google Drive**: Google's sign-in opens in a new tab with a code already copied for you; paste it, allow access, and the page notices by itself.
+3. Press Test, then choose where copies go under Schedule & retention.
 
-Google Drive gives the plugin access only to the files it makes; OneDrive only to its own app folder (Apps → Bastion Backup). Tokens go straight from Google or Microsoft to your site.
+Each service gives the plugin access only to its own folder (Google Drive: the files it makes; OneDrive and Dropbox: Apps → Bastion Backup). Tokens go straight from the service to your site.
 
-Prefer your own Google or Microsoft app? Open "Advanced: use your own app instead" on the Destinations tab and follow its steps.
+Prefer your own app? Open "Advanced: use your own app instead" on the Destinations tab and follow its steps.
 
 = File server (SFTP or FTPS) =
 
@@ -81,6 +81,12 @@ Yes. Nginx ignores .htaccess, so Tools → Site Health checks whether the backup
 5. Sign in. The installer deletes itself; if it reports it could not, delete installer.php by hand at once.
 
 == Changelog ==
+
+= 1.0.3 =
+* Fixed: backups stopped at once with "Undefined constant SODIUM_CRYPTO_SECRETSTREAM_…" on servers using WordPress's built-in sodium.
+* Settings → Where backups are kept: choose the folder on your server (e.g. beside public_html, outside the website); backups already made are moved.
+* Dropbox, with one-click Connect; OneDrive also connects in one click (sign in and come straight back). Google Drive's code is copied for you.
+* The progress box shows the steps (database, files, each copy, finish), the size done and the time left.
 
 = 1.0.2 =
 * Settings → Server check shows what the PHP running the site really has: version, build (cPanel EasyApache, CloudLinux, Plesk), php.ini, sodium.

@@ -10,9 +10,10 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 $bbk_settings = get_option( 'bastion_backup_settings', array() );
 $bbk_suffix   = (string) get_option( 'bastion_backup_dir_suffix', '' );
-$bbk_root     = defined( 'BASTION_BACKUP_STORAGE' ) && '' !== (string) BASTION_BACKUP_STORAGE ? rtrim( (string) BASTION_BACKUP_STORAGE, '/\\' ) : ( preg_match( '/^[a-f0-9]{16}$/', $bbk_suffix ) ? WP_CONTENT_DIR . '/bastion-backups-' . $bbk_suffix : '' );
+$bbk_chosen   = (string) get_option( 'bastion_backup_storage_dir', '' );
+$bbk_root     = defined( 'BASTION_BACKUP_STORAGE' ) && '' !== (string) BASTION_BACKUP_STORAGE ? rtrim( (string) BASTION_BACKUP_STORAGE, '/\\' ) : ( '' !== $bbk_chosen ? $bbk_chosen : ( preg_match( '/^[a-f0-9]{16}$/', $bbk_suffix ) ? WP_CONTENT_DIR . '/bastion-backups-' . $bbk_suffix : '' ) );
 
-foreach ( array( 'bastion_backup_settings', 'bastion_backup_destinations', 'bastion_backup_secrets', 'bastion_backup_key', 'bastion_backup_current_job', 'bastion_backup_maintenance', 'bastion_backup_audit', 'bastion_backup_installer' ) as $bbk_opt ) {
+foreach ( array( 'bastion_backup_settings', 'bastion_backup_destinations', 'bastion_backup_secrets', 'bastion_backup_key', 'bastion_backup_current_job', 'bastion_backup_maintenance', 'bastion_backup_audit', 'bastion_backup_installer', 'bastion_backup_storage_dir' ) as $bbk_opt ) {
 	delete_option( $bbk_opt );
 	delete_site_option( $bbk_opt );
 }

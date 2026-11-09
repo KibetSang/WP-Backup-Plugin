@@ -20,10 +20,21 @@ defined( 'ABSPATH' ) || exit;
 
 final class Storage {
 
+	public const DIR_OPTION = 'bastion_backup_storage_dir';
+
 	public static function root(): string {
 		if ( defined( 'BASTION_BACKUP_STORAGE' ) && '' !== (string) BASTION_BACKUP_STORAGE ) {
 			return rtrim( (string) BASTION_BACKUP_STORAGE, '/\\' );
 		}
+		$chosen = (string) get_option( self::DIR_OPTION, '' );
+		if ( '' !== $chosen ) {
+			return $chosen; // Chosen under Settings → Where backups are kept.
+		}
+		return self::defaultRoot();
+	}
+
+	/** The automatic place: wp-content/bastion-backups-<16 random hex>. */
+	public static function defaultRoot(): string {
 		$suffix = (string) get_option( 'bastion_backup_dir_suffix', '' );
 		if ( ! preg_match( '/^[a-f0-9]{16}$/', $suffix ) ) {
 			$suffix = bin2hex( random_bytes( 8 ) );
@@ -64,6 +75,67 @@ final class Storage {
 				@file_put_contents( "$d/$name", $body );
 			}
 		}
+	}
+
+	/** A folder next to the website's own folder (e.g. /home/account/bastion-backups beside public_html), when one exists. */
+	public static function suggestedOutside(): string {
+		return wp_normalize_path( dirname( untrailingslashit( ABSPATH ) ) ) . '/bastion-backups';
+	}
+
+	/**
+	 * Moves backups to another folder on this server. The folder must be absolute, writable and not part of WordPress
+	 * itself; outside the website is best. Backups already made are moved into it.
+	 *
+	 * @return array{root:string, moved:int, left:int}
+	 */
+	public static function move( string $to ): array {
+		if ( defined( 'BASTION_BACKUP_STORAGE' ) && '' !== (string) BASTION_BACKUP_STORAGE ) {
+			throw new BackupException( 'The folder is set by BASTION_BACKUP_STORAGE in wp-config.php; change it there.' );
+		}
+		$to = trim( $to );
+		if ( '' === $to ) {
+			$to = wp_normalize_path( self::defaultRoot() ); // Empty: back to the automatic folder.
+		}
+		$to = rtrim( wp_normalize_path( $to ), '/' );
+		if ( '' === $to || preg_match( '#^[A-Za-z]:$#', $to ) || ! preg_match( '#^(/|[A-Za-z]:/)#', $to ) || str_contains( $to, '/../' ) || str_ends_with( $to, '/..' ) || preg_match( '/[\x00-\x1f]/', $to ) ) {
+			throw new BackupException( 'Enter the full path of a folder, starting with /, for example ' . self::suggestedOutside() );
+		}
+		$abs = wp_normalize_path( untrailingslashit( ABSPATH ) );
+		foreach ( array( $abs, $abs . '/wp-admin', $abs . '/wp-includes', wp_normalize_path( WP_CONTENT_DIR ), wp_normalize_path( WP_CONTENT_DIR ) . '/plugins', wp_normalize_path( WP_CONTENT_DIR ) . '/uploads' ) as $bad ) {
+			if ( $to === $bad || str_starts_with( $abs . '/', $to . '/' ) || str_starts_with( $to . '/', $abs . '/wp-admin/' ) || str_starts_with( $to . '/', $abs . '/wp-includes/' ) ) {
+				throw new BackupException( 'Choose a folder of its own, not a folder of WordPress itself or one that contains it.' );
+			}
+		}
+		if ( ! is_dir( $to ) && ! wp_mkdir_p( $to ) ) {
+			throw new BackupException( 'Cannot make that folder. Make it in cPanel\'s File Manager first, or choose another.' );
+		}
+		$real = realpath( $to );
+		if ( false === $real || ! is_writable( $real ) ) {
+			throw new BackupException( 'This site cannot write to that folder. Check its permissions in File Manager.' );
+		}
+		$old = wp_normalize_path( self::root() );
+		$new = wp_normalize_path( $real );
+		if ( $old === $new ) {
+			return array( 'root' => $new, 'moved' => 0, 'left' => 0 );
+		}
+		if ( str_starts_with( $new . '/', $old . '/' ) ) {
+			throw new BackupException( 'Choose a folder outside the current backup folder.' );
+		}
+		$list = self::localArchives();
+		update_option( self::DIR_OPTION, $new === wp_normalize_path( self::defaultRoot() ) ? '' : $new, false );
+		self::ensure();
+		$moved = 0;
+		$left  = 0;
+		foreach ( $list as $a ) {
+			$from = $old . '/archives/' . $a['name'];
+			$dest = $new . '/archives/' . $a['name'];
+			if ( is_file( $from ) && ! file_exists( $dest ) && @rename( $from, $dest ) ) {
+				++$moved;
+			} else {
+				++$left;
+			}
+		}
+		return array( 'root' => $new, 'moved' => $moved, 'left' => $left );
 	}
 
 	/** True when backups sit inside the website's folder (protected by deny rules, but outside is stronger). */

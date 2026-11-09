@@ -76,3 +76,11 @@
 .bbk-badge.bad { background: #fcf0f1; color: #8a2424; }
 .bbk-server th { width: 220px; }
 .bbk-server code { background: none; padding: 0; word-break: break-all; }
+.bbk-phases { display: flex; flex-wrap: wrap; gap: 4px 18px; list-style: none; margin: 4px 0 10px; padding: 0; }
+.bbk-phases li { margin: 0; color: #646970; display: inline-flex; align-items: center; gap: 4px; }
+.bbk-phases li.done { color: #00450c; }
+.bbk-phases li.now { color: #1d2327; font-weight: 600; }
+.bbk-phases li.now .dashicons { animation: bbk-spin 1.6s linear infinite; color: #2271b1; }
+.bbk-phases li.fail { color: #b32d2e; font-weight: 600; }
+@keyframes bbk-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .bbk-phases li.now .dashicons { animation: none; } }

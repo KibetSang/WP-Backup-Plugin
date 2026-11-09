@@ -14,6 +14,23 @@ defined( 'ABSPATH' ) || defined( 'BBK_INSTALLER' ) || exit;
 
 final class Crypto {
 
+	/*
+	 * libsodium's sizes and tags, fixed by the library. Defined here because WordPress's built-in sodium_compat does not
+	 * always declare the SODIUM_* constants when PHP's sodium extension is off.
+	 */
+	public const BOX_PUBLICKEYBYTES = 32;
+	public const PWHASH_ALG_ARGON2ID13 = 2;
+	public const PWHASH_MEMLIMIT_INTERACTIVE = 67108864;
+	public const PWHASH_OPSLIMIT_INTERACTIVE = 2;
+	public const PWHASH_SALTBYTES = 16;
+	public const SECRETBOX_KEYBYTES = 32;
+	public const SECRETBOX_MACBYTES = 16;
+	public const SECRETBOX_NONCEBYTES = 24;
+	public const STREAM_HEADERBYTES = 24;
+	public const STREAM_KEYBYTES = 32;
+	public const TAG_FINAL = 3;
+	public const TAG_MESSAGE = 0;
+
 	public const MIN_PASSPHRASE = 12;
 
 	/** Upper bounds accepted from an archive header (prevents KDF-based DoS from a crafted file). */
@@ -70,12 +87,12 @@ final class Crypto {
 	public static function newArchiveKeys( string $passphrase ): array {
 		self::assertAvailable();
 		self::assertPassphrase( $passphrase );
-		$salt  = random_bytes( SODIUM_CRYPTO_PWHASH_SALTBYTES );
-		$ops   = SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE;
-		$mem   = SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE; // 64 MiB: safe on shared hosting.
+		$salt  = random_bytes( self::PWHASH_SALTBYTES );
+		$ops   = self::PWHASH_OPSLIMIT_INTERACTIVE;
+		$mem   = self::PWHASH_MEMLIMIT_INTERACTIVE; // 64 MiB: safe on shared hosting.
 		$kek   = self::kek( $passphrase, $salt, $ops, $mem );
 		$key   = sodium_crypto_secretstream_xchacha20poly1305_keygen();
-		$nonce = random_bytes( SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
+		$nonce = random_bytes( self::SECRETBOX_NONCEBYTES );
 		$wrap  = sodium_crypto_secretbox( $key, $nonce, $kek );
 		self::wipe( $kek );
 		return array(
@@ -108,8 +125,8 @@ final class Crypto {
 		if ( $ops < 1 || $ops > self::MAX_OPS || $mem < 8192 || $mem > self::MAX_MEM ) {
 			throw new BackupException( 'Archive header has out-of-range KDF parameters.' );
 		}
-		$salt  = self::b64( $hdr['salt'] ?? '', SODIUM_CRYPTO_PWHASH_SALTBYTES );
-		$nonce = self::b64( $hdr['wn'] ?? '', SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
+		$salt  = self::b64( $hdr['salt'] ?? '', self::PWHASH_SALTBYTES );
+		$nonce = self::b64( $hdr['wn'] ?? '', self::SECRETBOX_NONCEBYTES );
 		$wrap  = self::b64( $hdr['wk'] ?? '' );
 		$kek   = self::kek( $passphrase, $salt, $ops, $mem );
 		$key   = sodium_crypto_secretbox_open( $wrap, $nonce, $kek );
@@ -184,7 +201,7 @@ final class Crypto {
 	 */
 	public static function newArchiveKeysForPublicKey( string $public ): array {
 		self::assertAvailable();
-		if ( SODIUM_CRYPTO_BOX_PUBLICKEYBYTES !== strlen( $public ) ) {
+		if ( self::BOX_PUBLICKEYBYTES !== strlen( $public ) ) {
 			throw new BackupException( 'The backup key on this site is damaged. Make a new backup key.' );
 		}
 		$key = sodium_crypto_secretstream_xchacha20poly1305_keygen();
@@ -210,7 +227,7 @@ final class Crypto {
 		$key  = sodium_crypto_box_seal_open( self::b64( (string) ( $hdr['wk'] ?? '' ) ), $pair );
 		self::wipe( $secret );
 		self::wipe( $pair );
-		if ( false === $key || SODIUM_CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_KEYBYTES !== strlen( $key ) ) {
+		if ( false === $key || self::STREAM_KEYBYTES !== strlen( $key ) ) {
 			throw new BackupException( 'The backup header is damaged or has been tampered with.' );
 		}
 		return $key;
@@ -250,7 +267,7 @@ final class Crypto {
 
 	/** Symmetric seal for small secrets (vault, job state). Returns printable string. */
 	public static function seal( string $plain, string $key ): string {
-		$nonce = random_bytes( SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
+		$nonce = random_bytes( self::SECRETBOX_NONCEBYTES );
 		return 'bbv1:' . base64_encode( $nonce . sodium_crypto_secretbox( $plain, $nonce, $key ) );
 	}
 
@@ -259,12 +276,12 @@ final class Crypto {
 			return null;
 		}
 		$raw = base64_decode( substr( $blob, 5 ), true );
-		if ( false === $raw || strlen( $raw ) < SODIUM_CRYPTO_SECRETBOX_NONCEBYTES + SODIUM_CRYPTO_SECRETBOX_MACBYTES ) {
+		if ( false === $raw || strlen( $raw ) < self::SECRETBOX_NONCEBYTES + self::SECRETBOX_MACBYTES ) {
 			return null;
 		}
 		$plain = sodium_crypto_secretbox_open(
-			substr( $raw, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES ),
-			substr( $raw, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES ),
+			substr( $raw, self::SECRETBOX_NONCEBYTES ),
+			substr( $raw, 0, self::SECRETBOX_NONCEBYTES ),
 			$key
 		);
 		return false === $plain ? null : $plain;
@@ -272,7 +289,7 @@ final class Crypto {
 
 	/** Derive a 32-byte subkey from arbitrary input material (domain separated). */
 	public static function subkey( string $material, string $context ): string {
-		return sodium_crypto_generichash( $context . "\0" . $material, '', SODIUM_CRYPTO_SECRETBOX_KEYBYTES );
+		return sodium_crypto_generichash( $context . "\0" . $material, '', self::SECRETBOX_KEYBYTES );
 	}
 
 	public static function randomToken( int $bytes = 24 ): string {
@@ -281,12 +298,12 @@ final class Crypto {
 
 	private static function kek( string $passphrase, string $salt, int $ops, int $mem ): string {
 		return sodium_crypto_pwhash(
-			SODIUM_CRYPTO_SECRETBOX_KEYBYTES,
+			self::SECRETBOX_KEYBYTES,
 			$passphrase,
 			$salt,
 			$ops,
 			$mem,
-			SODIUM_CRYPTO_PWHASH_ALG_ARGON2ID13
+			self::PWHASH_ALG_ARGON2ID13
 		);
 	}
 

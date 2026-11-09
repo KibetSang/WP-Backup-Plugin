@@ -52,6 +52,11 @@ final class OneDrive extends OAuthDestination {
 		return Apps::onedrive();
 	}
 
+	/** OneDrive's shared app is a public client: sign in and come straight back. */
+	public function sharedRedirect(): bool {
+		return true;
+	}
+
 	protected function extraAuthParams(): array {
 		return array( 'response_mode' => 'query' );
 	}

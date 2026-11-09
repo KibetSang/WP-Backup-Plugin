@@ -63,6 +63,41 @@ final class ConnectTest extends SiteCase {
 		$this->assertSame( GoogleDrive::class === $class ? BASTION_BACKUP_GOOGLE_CLIENT_ID : BASTION_BACKUP_ONEDRIVE_CLIENT_ID, $this->cloud->lastTokenForm['client_id'] );
 	}
 
+	/** @return array<string, array{0: class-string, 1: string, 2: string}> */
+	public static function redirects(): array {
+		return array(
+			'OneDrive' => array( OneDrive::class, 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize', BASTION_BACKUP_ONEDRIVE_CLIENT_ID ),
+			'Dropbox'  => array( \BastionBackup\Destinations\Dropbox::class, 'https://www.dropbox.com/oauth2/authorize', BASTION_BACKUP_DROPBOX_APP_KEY ),
+		);
+	}
+
+	/** Press Connect → sign in at the provider → the shared return page → this site → connected. No secret anywhere. */
+	#[\PHPUnit\Framework\Attributes\DataProvider( 'redirects' )]
+	public function test_one_click_connect_signs_in_and_comes_back_through_the_shared_return_page( string $class, string $authorize, string $clientId ): void {
+		$d   = new $class();
+		$url = $d->beginConnect( 1, true );
+		$this->assertStringStartsWith( $authorize . '?', $url );
+		parse_str( (string) parse_url( $url, PHP_URL_QUERY ), $q );
+		$this->assertSame( $clientId, $q['client_id'] );
+		$this->assertSame( \BastionBackup\Destinations\Apps::RELAY_URL, $q['redirect_uri'] );
+		$this->assertSame( 'S256', $q['code_challenge_method'] );
+		$back = json_decode( base64_decode( strtr( $q['state'], '-_', '+/' ) ), true );
+		$this->assertSame( rest_url( 'bastion-backup/v1/oauth' ), $back['r'], 'the return page is told where this site is' );
+
+		// The provider → the return page → this site's callback with the code.
+		$r = \BastionBackup\OAuth::callback( new \WP_REST_Request( array( 'state' => $q['state'], 'code' => 'the-code' ) ) );
+		$this->assertStringContainsString( 'connected-' . $d->id(), $r->headers['Location'] );
+		$this->assertTrue( $d->isConfigured() );
+		$this->assertTrue( $d->usesShared() );
+		$f = $this->cloud->lastTokenForm;
+		$this->assertSame( array( 'authorization_code', $clientId, \BastionBackup\Destinations\Apps::RELAY_URL ), array( $f['grant_type'], $f['client_id'], $f['redirect_uri'] ) );
+		$this->assertArrayNotHasKey( 'client_secret', $f, 'a public client: no secret, the PKCE verifier instead' );
+		$this->assertNotEmpty( $f['code_verifier'] );
+		if ( str_contains( $authorize, 'dropbox' ) ) {
+			$this->assertSame( 'offline', $q['token_access_type'], 'Dropbox gives a refresh token only when asked' );
+		}
+	}
+
 	public function test_the_code_belongs_to_the_administrator_who_asked_for_it(): void {
 		$d = new GoogleDrive();
 		$d->beginDevice( 1 );
@@ -93,7 +128,8 @@ final class ConnectTest extends SiteCase {
 		$html = (string) ob_get_clean();
 		$_GET = array();
 		$this->assertMatchesRegularExpression( '#data-bbk="device"><img class="bbk-brand" src="[^"]+/assets/brands/google-drive\.png"[^>]*>Connect Google Drive</button>#', $html );
-		$this->assertMatchesRegularExpression( '#data-bbk="device"><img class="bbk-brand" src="[^"]+/assets/brands/onedrive\.png"[^>]*>Connect OneDrive</button>#', $html );
+		$this->assertMatchesRegularExpression( '#data-bbk="connect-shared"><img class="bbk-brand" src="[^"]+/assets/brands/onedrive\.png"[^>]*>Connect OneDrive</button>#', $html );
+		$this->assertMatchesRegularExpression( '#data-bbk="connect-shared"><img class="bbk-brand" src="[^"]+/assets/brands/dropbox\.png"[^>]*>Connect Dropbox</button>#', $html );
 		$this->assertStringContainsString( 'Advanced: use your own app instead', $html );
 	}
 }
