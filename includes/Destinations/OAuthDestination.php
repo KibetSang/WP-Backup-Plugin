@@ -254,6 +254,19 @@ abstract class OAuthDestination implements Destination {
 		return $data;
 	}
 
+	/**
+	 * A busy or lost answer (429, 5xx) mid-upload: resume next step, which first asks the provider what it has.
+	 * Ten in a row and it gives up, so a dead service cannot keep a job going forever.
+	 */
+	protected static function transient( array $res, array &$state ): bool {
+		if ( 429 !== $res['code'] && $res['code'] < 500 ) {
+			$state['busy'] = 0;
+			return false;
+		}
+		$state['busy'] = (int) ( $state['busy'] ?? 0 ) + 1;
+		return $state['busy'] < 10;
+	}
+
 	/** "bytes=0-1234" → 1235 (the next byte to send), or 0. */
 	protected static function nextFromRange( string $range ): int {
 		return preg_match( '/bytes=\d+-(\d+)/', $range, $m ) ? (int) $m[1] + 1 : 0;

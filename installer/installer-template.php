@@ -364,7 +364,12 @@ final class BbkInstaller {
 					$c = (string) preg_replace( '/^<\?php\s*/', "<?php\ndefine( '" . $k . "', " . var_export( $v, true ) . " );\n", $c, 1 );
 				}
 			}
-			$c = (string) preg_replace( '/\$table_prefix\s*=\s*([\'"])[^\'"]*\1\s*;/', '$table_prefix = ' . var_export( (string) $st['prefix'], true ) . ';', $c, 1 );
+			$n = 0;
+			$c = (string) preg_replace( '/\$table_prefix\s*=\s*([\'"])[^\'"]*\1\s*;/', '$table_prefix = ' . var_export( (string) $st['prefix'], true ) . ';', $c, 1, $n );
+			if ( 0 === $n ) {
+				// No prefix line: WordPress would look for wp_ tables. Add it at the top.
+				$c = (string) preg_replace( '/^<\?php\s*/', "<?php\n\$table_prefix = " . var_export( (string) $st['prefix'], true ) . ";\n", $c, 1 );
+			}
 			if ( str_contains( $c, 'BASTION_BACKUP_STORAGE' ) ) {
 				$note = 'wp-config.php sets BASTION_BACKUP_STORAGE: check that the folder exists on this server.';
 			}

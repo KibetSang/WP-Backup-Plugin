@@ -101,6 +101,9 @@ final class OneDrive extends OAuthDestination {
 				$state = array(); // Expired: start again.
 				return $this->upload( $localPath, $remoteName, $state, $deadline );
 			}
+			if ( self::transient( $res, $state ) ) {
+				return false;
+			}
 			if ( 200 !== $res['code'] ) {
 				throw Http::fail( 'Resuming the OneDrive upload', $res );
 			}
@@ -126,6 +129,9 @@ final class OneDrive extends OAuthDestination {
 				$state['id']  = (string) ( Http::json( $res )['id'] ?? '' );
 				$state['off'] = $size;
 				return true;
+			}
+			if ( self::transient( $res, $state ) ) {
+				return false;
 			}
 			if ( 202 !== $res['code'] ) {
 				throw Http::fail( 'Uploading to OneDrive', $res );
@@ -161,7 +167,8 @@ final class OneDrive extends OAuthDestination {
 						'id'   => (string) $f['id'],
 						'name' => (string) $f['name'],
 						'size' => (int) ( $f['size'] ?? 0 ),
-						'time' => (int) strtotime( (string) ( $f['createdDateTime'] ?? '' ) ) ?: Registry::timeFromName( (string) $f['name'] ),
+						// When the backup was made (from its name), not when it was uploaded: retention keeps the newest backups.
+						'time' => Registry::timeFromName( (string) $f['name'] ) ?: (int) strtotime( (string) ( $f['createdDateTime'] ?? '' ) ),
 					);
 				}
 			}

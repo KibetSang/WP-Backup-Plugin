@@ -28,12 +28,13 @@ abstract class SiteCase extends TestCase {
 		}
 		$GLOBALS['wpdb']->db = null;
 		bbk_test_reset_options_table();
+		\BastionBackup\Vault::reset_cache();
 		$this->wipe( ABSPATH );
 		mkdir( WP_CONTENT_DIR . '/uploads/2026/11', 0777, true );
 		mkdir( WP_CONTENT_DIR . '/plugins/hello', 0777, true );
 		mkdir( WP_CONTENT_DIR . '/cache', 0777, true );
 		file_put_contents( ABSPATH . 'index.php', '<?php // front' );
-		file_put_contents( ABSPATH . 'wp-config.php', "<?php define('DB_NAME','live');" );
+		file_put_contents( ABSPATH . 'wp-config.php', "<?php\ndefine( 'DB_NAME', 'live' );\ndefine( 'DB_USER', \"live_user\" );\ndefine('DB_PASSWORD','it\\'s secret');\ndefine( 'DB_HOST', 'localhost' );\n\$table_prefix  = \"wp_\";\nrequire_once ABSPATH . 'wp-settings.php';\n" );
 		file_put_contents( WP_CONTENT_DIR . '/plugins/hello/hello.php', '<?php // plugin' );
 		file_put_contents( WP_CONTENT_DIR . '/uploads/2026/11/photo.jpg', random_bytes( 3 * 1048576 + 7 ) );
 		file_put_contents( WP_CONTENT_DIR . '/uploads/2026/11/notes.txt', str_repeat( 'notes ', 200000 ) );

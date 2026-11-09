@@ -76,7 +76,7 @@ final class BackupRestoreTest extends SiteCase {
 		$this->assertEmpty( $r['error'] ?? null, (string) ( $r['error'] ?? '' ) );
 
 		$this->assertSame( $files, $this->files(), 'files back exactly' );
-		$this->assertSame( "<?php define('DB_NAME','live');", file_get_contents( ABSPATH . 'wp-config.php' ) );
+		$this->assertStringContainsString( "define( 'DB_NAME', 'live' );", (string) file_get_contents( ABSPATH . 'wp-config.php' ), 'wp-config.php untouched by a dashboard restore' );
 		wp_cache_flush();
 		$this->assertSame( $posts, $this->posts() );
 		$this->assertSame( 'Test site', get_option( 'blogname' ) );

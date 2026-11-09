@@ -130,6 +130,9 @@ final class GoogleDrive extends OAuthDestination {
 				$state = array(); // The session expired (they last a week): start again.
 				return $this->upload( $localPath, $remoteName, $state, $deadline );
 			}
+			if ( self::transient( $res, $state ) ) {
+				return false;
+			}
 			if ( 308 !== $res['code'] ) {
 				throw Http::fail( 'Resuming the Google Drive upload', $res );
 			}
@@ -140,6 +143,9 @@ final class GoogleDrive extends OAuthDestination {
 			$res = $this->put( $state['session'], sprintf( 'bytes %d-%d/%d', $state['off'], $state['off'] + $len - 1, $size ), self::chunk( $localPath, $state['off'], $len ), $deadline );
 			if ( $this->finished( $res, $state ) ) {
 				return true;
+			}
+			if ( self::transient( $res, $state ) ) {
+				return false;
 			}
 			if ( 308 !== $res['code'] ) {
 				throw Http::fail( 'Uploading to Google Drive', $res );
@@ -204,7 +210,8 @@ final class GoogleDrive extends OAuthDestination {
 						'id'   => (string) $f['id'],
 						'name' => (string) $f['name'],
 						'size' => (int) ( $f['size'] ?? 0 ),
-						'time' => (int) strtotime( (string) ( $f['createdTime'] ?? '' ) ) ?: Registry::timeFromName( (string) $f['name'] ),
+						// When the backup was made (from its name), not when it was uploaded: retention keeps the newest backups.
+						'time' => Registry::timeFromName( (string) $f['name'] ) ?: (int) strtotime( (string) ( $f['createdTime'] ?? '' ) ),
 					);
 				}
 			}
