@@ -51,7 +51,7 @@ final class ArchiveWriter {
 
 	private static function start( string $path, array $keys, string $generator ): self {
 		[ $state, $ssHeader ] = sodium_crypto_secretstream_xchacha20poly1305_init_push( $keys['data_key'] );
-		sodium_memzero( $keys['data_key'] );
+		Crypto::wipe( $keys['data_key'] );
 
 		$hdr = $keys['header'] + array(
 			'v'       => self::VERSION,
@@ -141,7 +141,7 @@ final class ArchiveWriter {
 		$this->buf = '';
 		fflush( $this->fh );
 		fclose( $this->fh );
-		sodium_memzero( $this->state );
+		Crypto::wipe( $this->state );
 	}
 
 	public function close(): void {

@@ -16,6 +16,14 @@ set_error_handler(
 	}
 );
 
+// BBK_SODIUM_COMPAT=<path to wp-includes/sodium_compat>, with PHP's sodium functions disabled, runs everything on
+// WordPress's pure-PHP copy instead, as on hosts where the extension is off.
+if ( getenv( 'BBK_SODIUM_COMPAT' ) ) {
+	require_once rtrim( (string) getenv( 'BBK_SODIUM_COMPAT' ), '/' ) . '/autoload.php';
+	// The extension is still loaded here (only its functions are disabled): make sodium_compat use pure PHP.
+	ParagonIE_Sodium_Compat::$disableFallbackForUnitTests = true;
+}
+
 defined( 'BBK_INSTALLER' ) || define( 'BBK_INSTALLER', true );
 foreach ( array( 'BackupException', 'Crypto', 'ArchiveWriter', 'ArchiveReader', 'PathGuard', 'FileScanner', 'FileArchiver', 'Restorer', 'SearchReplace', 'Db', 'DbExporter', 'DbImporter' ) as $c ) {
 	require_once dirname( __DIR__ ) . '/core/' . $c . '.php';

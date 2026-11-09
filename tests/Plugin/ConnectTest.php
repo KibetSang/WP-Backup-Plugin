@@ -92,8 +92,8 @@ final class ConnectTest extends SiteCase {
 		\BastionBackup\Admin::render();
 		$html = (string) ob_get_clean();
 		$_GET = array();
-		$this->assertStringContainsString( 'data-bbk="device">Connect Google Drive</button>', $html );
-		$this->assertStringContainsString( 'data-bbk="device">Connect OneDrive</button>', $html );
+		$this->assertMatchesRegularExpression( '#data-bbk="device"><img class="bbk-brand" src="[^"]+/assets/brands/google-drive\.png"[^>]*>Connect Google Drive</button>#', $html );
+		$this->assertMatchesRegularExpression( '#data-bbk="device"><img class="bbk-brand" src="[^"]+/assets/brands/onedrive\.png"[^>]*>Connect OneDrive</button>#', $html );
 		$this->assertStringContainsString( 'Advanced: use your own app instead', $html );
 	}
 }

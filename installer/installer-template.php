@@ -45,6 +45,12 @@ final class BbkInstaller {
 		if ( empty( $_SESSION['csrf'] ) ) {
 			$_SESSION['csrf'] = bin2hex( random_bytes( 16 ) );
 		}
+		if ( \BastionBackup\Core\Crypto::missing() ) {
+			http_response_code( 500 );
+			header( 'Content-Type: text/plain; charset=utf-8' );
+			echo 'This server\'s PHP (' . PHP_VERSION . ') has no sodium extension, which the backup is encrypted with. Turn on "sodium" for this PHP version in the hosting panel (or in php.ini: extension=sodium), then reload.';
+			return;
+		}
 		if ( 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) ) {
 			$this->post();
 			return;

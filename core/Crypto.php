@@ -20,11 +20,39 @@ final class Crypto {
 	private const MAX_OPS = 10;
 	private const MAX_MEM = 1073741824; // 1 GiB.
 
+	/** Every libsodium function the plugin uses (the passphrase mode also needs sodium_crypto_pwhash). */
+	public const NEEDED = array(
+		'sodium_crypto_secretstream_xchacha20poly1305_keygen', 'sodium_crypto_secretstream_xchacha20poly1305_init_push',
+		'sodium_crypto_secretstream_xchacha20poly1305_push', 'sodium_crypto_secretstream_xchacha20poly1305_init_pull',
+		'sodium_crypto_secretstream_xchacha20poly1305_pull', 'sodium_crypto_box_keypair', 'sodium_crypto_box_secretkey',
+		'sodium_crypto_box_publickey', 'sodium_crypto_box_publickey_from_secretkey', 'sodium_crypto_box_keypair_from_secretkey_and_publickey',
+		'sodium_crypto_box_seal', 'sodium_crypto_box_seal_open', 'sodium_crypto_secretbox', 'sodium_crypto_secretbox_open',
+		'sodium_crypto_generichash',
+	);
+
+	/** The functions that are missing: none when PHP's sodium extension or WordPress's built-in sodium_compat is there. */
+	public static function missing(): array {
+		return array_values( array_filter( self::NEEDED, static fn( string $f ): bool => ! function_exists( $f ) ) );
+	}
+
+	/** True with PHP's own sodium extension (fast); false when running on WordPress's pure-PHP sodium_compat (slower). */
+	public static function native(): bool {
+		return extension_loaded( 'sodium' ) && ! ( new \ReflectionFunction( 'sodium_crypto_secretstream_xchacha20poly1305_push' ) )->isUserDefined();
+	}
+
 	public static function assertAvailable(): void {
-		foreach ( array( 'sodium_crypto_secretstream_xchacha20poly1305_init_push', 'sodium_crypto_pwhash', 'sodium_crypto_secretbox' ) as $fn ) {
-			if ( ! function_exists( $fn ) ) {
-				throw new BackupException( 'The PHP sodium extension (libsodium) is required for encrypted backups.' );
-			}
+		if ( self::missing() ) {
+			throw new BackupException( 'Encryption is not available: PHP\'s sodium extension is off and WordPress\'s built-in copy of it was not found.' );
+		}
+	}
+
+	/** Wipes a secret from memory. With sodium_compat (which cannot wipe memory) it is overwritten and emptied instead. */
+	public static function wipe( string &$secret ): void {
+		try {
+			sodium_memzero( $secret );
+		} catch ( \Throwable $e ) {
+			$secret = str_repeat( "\0", strlen( $secret ) );
+			$secret = '';
 		}
 	}
 
@@ -49,7 +77,7 @@ final class Crypto {
 		$key   = sodium_crypto_secretstream_xchacha20poly1305_keygen();
 		$nonce = random_bytes( SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
 		$wrap  = sodium_crypto_secretbox( $key, $nonce, $kek );
-		sodium_memzero( $kek );
+		self::wipe( $kek );
 		return array(
 			'data_key' => $key,
 			'header'   => array(
@@ -85,7 +113,7 @@ final class Crypto {
 		$wrap  = self::b64( $hdr['wk'] ?? '' );
 		$kek   = self::kek( $passphrase, $salt, $ops, $mem );
 		$key   = sodium_crypto_secretbox_open( $wrap, $nonce, $kek );
-		sodium_memzero( $kek );
+		self::wipe( $kek );
 		if ( false === $key ) {
 			throw new BackupException( 'Wrong passphrase, or the archive header has been tampered with.' );
 		}
@@ -114,8 +142,8 @@ final class Crypto {
 		$secret = sodium_crypto_box_secretkey( $pair );
 		$public = sodium_crypto_box_publickey( $pair );
 		$text   = self::formatKey( $secret );
-		sodium_memzero( $secret );
-		sodium_memzero( $pair );
+		self::wipe( $secret );
+		self::wipe( $pair );
 		return array(
 			'text'   => $text,
 			'public' => $public,
@@ -175,13 +203,13 @@ final class Crypto {
 		$public = sodium_crypto_box_publickey_from_secretkey( $secret );
 		$id     = self::keyId( $public );
 		if ( ! hash_equals( (string) ( $hdr['kid'] ?? '' ), $id ) ) {
-			sodium_memzero( $secret );
+			self::wipe( $secret );
 			throw new BackupException( sprintf( 'This key does not open this backup. The backup was made with key %s; the key given is %s.', (string) ( $hdr['kid'] ?? '?' ), $id ) );
 		}
 		$pair = sodium_crypto_box_keypair_from_secretkey_and_publickey( $secret, $public );
 		$key  = sodium_crypto_box_seal_open( self::b64( (string) ( $hdr['wk'] ?? '' ) ), $pair );
-		sodium_memzero( $secret );
-		sodium_memzero( $pair );
+		self::wipe( $secret );
+		self::wipe( $pair );
 		if ( false === $key || SODIUM_CRYPTO_SECRETSTREAM_XCHACHA20POLY1305_KEYBYTES !== strlen( $key ) ) {
 			throw new BackupException( 'The backup header is damaged or has been tampered with.' );
 		}

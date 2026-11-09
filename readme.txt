@@ -4,7 +4,7 @@ Tags: backup, restore, migration, google drive, onedrive
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -81,6 +81,13 @@ Yes. Nginx ignores .htaccess, so Tools → Site Health checks whether the backup
 5. Sign in. The installer deletes itself; if it reports it could not, delete installer.php by hand at once.
 
 == Changelog ==
+
+= 1.0.1 =
+* Works where PHP's sodium extension is off: it uses WordPress's built-in copy (slower) and says so, instead of refusing to start.
+* The Bastion Backup menu is always in the sidebar; when the server needs a change, its page says exactly what (PHP version, sodium, php.ini).
+* Connect Google Drive and OneDrive by signing in with a code, once the shared apps are set (docs/SHARED-APPS.md).
+* Official Google Drive and OneDrive logos.
+* Fixed: the "replace the key" form showed before it was asked for.
 
 = 1.0.0 =
 * First release: encrypted backups sealed to a backup key, resumable to 10 GB and more, Google Drive, OneDrive and SFTP/FTPS destinations, dashboard restore with an atomic database swap, standalone installer, WP-CLI, Site Health checks.

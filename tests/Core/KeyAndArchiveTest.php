@@ -283,6 +283,9 @@ final class KeyAndArchiveTest extends TestCase {
 	}
 
 	public function test_the_passphrase_mode_still_round_trips(): void {
+		if ( ! Crypto::native() ) {
+			$this->markTestSkipped( 'Passphrase archives need Argon2, which WordPress\'s pure-PHP sodium_compat does not offer (the plugin itself uses the backup key).' );
+		}
 		$arch = $this->tmp . '/p.bbk';
 		$w    = ArchiveWriter::create( $arch, 'correct horse battery staple' );
 		$w->record( 'S', array( 'a' => 1 ), 0 );

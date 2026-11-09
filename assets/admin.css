@@ -1,5 +1,7 @@
 /* Bastion Backup admin page: the Biosafety Backups layout in WordPress admin colours. */
 .bbk { max-width: 1180px; }
+/* The hidden attribute must win over the display rules below. */
+.bbk [hidden] { display: none !important; }
 .bbk-lead { font-size: 14px; color: #50575e; max-width: 760px; margin: 4px 0 12px; }
 .bbk .nav-tab-wrapper { margin-bottom: 16px; }
 .bbk-panel { background: #fff; border: 1px solid #c3c4c7; box-shadow: 0 1px 1px rgba(0,0,0,.04); margin: 0 0 16px; }
@@ -64,3 +66,9 @@
 .bbk-device { margin: 8px 0 0; }
 .bbk-devcode { font-size: 20px; letter-spacing: 2px; padding: 4px 10px; }
 .bbk-devwait .spinner { float: none; margin: 0 6px 0 0; vertical-align: middle; }
+.bbk-brand { vertical-align: middle; margin: 0 6px 0 0; object-fit: contain; }
+.bbk-panel > header h2 .bbk-brand { margin-right: 8px; position: relative; top: -1px; }
+.bbk-badge .bbk-brand { width: 16px; height: 16px; font-size: 16px; margin-right: 4px; }
+.bbk .button.bbk-connect { display: inline-flex; align-items: center; gap: 2px; background: #fff; color: #1d2327; border-color: #8c8f94; font-weight: 600; }
+.bbk .button.bbk-connect:hover { background: #f6f7f7; border-color: #2271b1; color: #1d2327; }
+.bbk-choices label .bbk-brand, .form-table label .bbk-brand { width: 18px; height: 18px; margin: 0 4px 0 2px; }

@@ -238,7 +238,8 @@
 		} ) );
 		const list = Array.from( rows.values() ).sort( ( a, b ) => b.name.slice( -26 ).localeCompare( a.name.slice( -26 ) ) );
 		let html = list.map( ( r ) => {
-			const where = Object.keys( r.at ).map( ( w ) => '<span class="bbk-badge">' + h( w === 'local' ? 'This server' : D.dests[ w ].label ) + '</span>' ).join( ' ' );
+			const icon = ( w ) => ( w === 'local' ? '<span class="dashicons dashicons-admin-site-alt3 bbk-brand" aria-hidden="true"></span>' : w === 'fileserver' ? '<span class="dashicons dashicons-networking bbk-brand" aria-hidden="true"></span>' : '<img class="bbk-brand" src="' + h( D.dests[ w ].icon ) + '" width="16" height="16" alt="">' );
+			const where = Object.keys( r.at ).map( ( w ) => '<span class="bbk-badge">' + icon( w ) + h( w === 'local' ? 'This server' : D.dests[ w ].label ) + '</span>' ).join( ' ' );
 			const first = r.at.local ? 'local' : Object.keys( r.at )[ 0 ];
 			return '<tr data-name="' + h( r.name ) + '"><td><b>' + h( when( r.time ) ) + '</b><div class="bbk-small">' + h( r.name ) + '</div></td><td class="num">' + h( size( r.size ) ) + '</td><td>' + where + '</td><td>' + h( r.kid ) + '</td>' +
 				'<td class="bbk-checkcell"><button type="button" class="button button-small" data-bbk="check" data-where="' + h( first ) + '">Check with the key</button></td>' +

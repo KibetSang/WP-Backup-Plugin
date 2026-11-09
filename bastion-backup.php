@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Bastion Backup
  * Description:       Encrypted backup, migration and restore. The whole site and database, in resumable steps to 10 GB and more, sealed to a backup key this site cannot open, and copied to Google Drive, OneDrive or your own SFTP/FTPS server.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 6.4
  * Tested up to:      7.1
  * Requires PHP:      8.1
@@ -20,11 +20,21 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'BASTION_BACKUP_VERSION', '1.0.0' );
+define( 'BASTION_BACKUP_VERSION', '1.0.1' );
 define( 'BASTION_BACKUP_FILE', __FILE__ );
 define( 'BASTION_BACKUP_DIR', __DIR__ );
 
-if ( version_compare( PHP_VERSION, '8.1', '<' ) || ! extension_loaded( 'sodium' ) ) {
+// Encryption: PHP's sodium extension, or else WordPress's built-in copy (sodium_compat), which WordPress normally loads
+// itself when the extension is off. What matters is that the functions are there, not which one provides them.
+if ( ! function_exists( 'sodium_crypto_secretstream_xchacha20poly1305_push' ) && defined( 'WPINC' ) && is_file( ABSPATH . WPINC . '/sodium_compat/autoload.php' ) ) {
+	require_once ABSPATH . WPINC . '/sodium_compat/autoload.php';
+}
+$bbk_crypto_ok = true;
+foreach ( array( 'sodium_crypto_secretstream_xchacha20poly1305_push', 'sodium_crypto_secretstream_xchacha20poly1305_pull', 'sodium_crypto_box_seal', 'sodium_crypto_box_seal_open', 'sodium_crypto_secretbox', 'sodium_crypto_generichash' ) as $bbk_fn ) {
+	$bbk_crypto_ok = $bbk_crypto_ok && function_exists( $bbk_fn );
+}
+
+if ( version_compare( PHP_VERSION, '8.1', '<' ) || ! $bbk_crypto_ok ) {
 	// Stay inactive and say exactly what is missing and how to fix it, instead of failing.
 	$bbk_notice = static function (): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -38,7 +48,7 @@ if ( version_compare( PHP_VERSION, '8.1', '<' ) || ! extension_loaded( 'sodium' 
 			echo esc_html( sprintf( __( 'This site runs PHP %s; it needs PHP 8.1 or newer. In your hosting panel choose PHP 8.1 or later for this site (cPanel: Select PHP Version or MultiPHP Manager; Plesk: PHP Settings).', 'bastion-backup' ), PHP_VERSION ) );
 		} else {
 			/* translators: %s: PHP version */
-			echo esc_html( sprintf( __( 'This site runs PHP %s without the sodium extension, which encrypts the backups. It comes with PHP but is switched off here:', 'bastion-backup' ), PHP_VERSION ) ) . '</p><ul style="list-style:disc;margin-left:2em">';
+			echo esc_html( sprintf( __( 'This site runs PHP %s, but neither PHP\'s sodium extension nor WordPress\'s built-in copy of it (wp-includes/sodium_compat) could be loaded, and the backups are encrypted with it. Turn the extension on:', 'bastion-backup' ), PHP_VERSION ) ) . '</p><ul style="list-style:disc;margin-left:2em">';
 			echo '<li>' . esc_html__( 'cPanel: Select PHP Version → Extensions → tick sodium (or ask the host to enable "php-sodium").', 'bastion-backup' ) . '</li>';
 			echo '<li>' . esc_html__( 'XAMPP, WAMP or your own server: in php.ini change ;extension=sodium to extension=sodium, then restart Apache.', 'bastion-backup' ) . '</li>';
 			if ( '' !== $ini ) {

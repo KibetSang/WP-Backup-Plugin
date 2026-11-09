@@ -34,9 +34,13 @@ final class SiteHealth {
 	}
 
 	public static function sodium(): array {
-		return function_exists( 'sodium_crypto_secretstream_xchacha20poly1305_init_push' )
-			? self::result( 'bastion_backup_sodium', 'good', __( 'Backups can be encrypted', 'bastion-backup' ), __( 'PHP\'s sodium extension is present.', 'bastion-backup' ) )
-			: self::result( 'bastion_backup_sodium', 'critical', __( 'Backups cannot be encrypted', 'bastion-backup' ), __( 'Ask the host to enable PHP\'s sodium extension.', 'bastion-backup' ) );
+		if ( \BastionBackup\Core\Crypto::missing() ) {
+			return self::result( 'bastion_backup_sodium', 'critical', __( 'Backups cannot be encrypted', 'bastion-backup' ), __( 'Ask the host to enable PHP\'s sodium extension.', 'bastion-backup' ) );
+		}
+		return \BastionBackup\Core\Crypto::native()
+			? self::result( 'bastion_backup_sodium', 'good', __( 'Backups are encrypted at full speed', 'bastion-backup' ), __( 'PHP\'s sodium extension is loaded.', 'bastion-backup' ) )
+			/* translators: %s: PHP version */
+			: self::result( 'bastion_backup_sodium', 'recommended', __( 'Backups are encrypted slowly', 'bastion-backup' ), sprintf( __( 'PHP %s here has no sodium extension, so WordPress\'s built-in copy is used (about 1,000 times slower). Turn on the sodium extension for this PHP version.', 'bastion-backup' ), PHP_VERSION ) );
 	}
 
 	public static function key(): array {

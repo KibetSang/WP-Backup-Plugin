@@ -68,7 +68,7 @@ final class ArchiveReader {
 				throw new BackupException( 'Malformed archive header.' );
 			}
 			$r->state = sodium_crypto_secretstream_xchacha20poly1305_init_pull( $ssHeader, $key );
-			sodium_memzero( $key );
+			Crypto::wipe( $key );
 		}
 		return $r;
 	}

@@ -27,6 +27,23 @@ final class Admin {
 		add_action( 'admin_post_bbk_log', array( Ajax::class, 'logDownload' ) );
 	}
 
+	/** The destination's logo (Google Drive and OneDrive: their own; the file server: a WordPress icon). */
+	public static function brand( string $id, int $size = 20 ): string {
+		$file = array( 'google' => 'google-drive.png', 'onedrive' => 'onedrive.png' )[ $id ] ?? '';
+		if ( '' === $file ) {
+			return sprintf( '<span class="dashicons dashicons-networking bbk-brand" style="font-size:%1$dpx;width:%1$dpx;height:%1$dpx" aria-hidden="true"></span>', $size );
+		}
+		return sprintf( '<img class="bbk-brand" src="%s" width="%d" height="%d" alt="">', esc_url( plugins_url( 'assets/brands/' . $file, BASTION_BACKUP_FILE ) ), $size, $size );
+	}
+
+	/** @return array<string,string> */
+	public static function brandUrls(): array {
+		return array(
+			'google'   => plugins_url( 'assets/brands/google-drive.png', BASTION_BACKUP_FILE ),
+			'onedrive' => plugins_url( 'assets/brands/onedrive.png', BASTION_BACKUP_FILE ),
+		);
+	}
+
 	public static function url( string $tab = 'backups' ): string {
 		$base = is_multisite() ? network_admin_url( 'admin.php' ) : admin_url( 'admin.php' );
 		return add_query_arg( array( 'page' => self::SLUG, 'tab' => $tab ), $base );
@@ -65,6 +82,7 @@ final class Admin {
 			$dests[ $id ] = array(
 				'label'      => $d->label(),
 				'configured' => $d->isConfigured(),
+				'icon'       => self::brandUrls()[ $id ] ?? '',
 			);
 		}
 		wp_localize_script(
@@ -128,13 +146,23 @@ final class Admin {
 		if ( ! Keys::current() && 'backups' !== self::tab() ) {
 			echo '<div class="notice notice-warning"><p>' . wp_kses( sprintf( /* translators: %s: link */ __( 'No backups are made until there is a backup key. <a href="%s">Make the backup key</a>.', 'bastion-backup' ), esc_url( self::url() ) ), array( 'a' => array( 'href' => true ) ) ) . '</p></div>';
 		}
+		if ( ! Core\Crypto::native() ) {
+			echo '<div class="notice notice-warning"><p><strong>' . esc_html__( 'Backups work, but slowly.', 'bastion-backup' ) . '</strong> ' . esc_html(
+				sprintf(
+					/* translators: 1: PHP version, 2: php.ini path */
+					__( 'This site\'s PHP (%1$s) does not have the sodium extension loaded, so the encryption uses WordPress\'s built-in copy of it, which is about 1,000 times slower (roughly 25 MB a minute). Turn sodium on for this exact PHP version (cPanel: Select PHP Version → Extensions → sodium; check MultiPHP Manager shows the same version for this site), or in %2$s change ;extension=sodium to extension=sodium, then reload.', 'bastion-backup' ),
+					PHP_VERSION,
+					(string) php_ini_loaded_file() ?: 'php.ini'
+				)
+			) . '</p></div>';
+		}
 		if ( Storage::publicPath() ) {
 			echo '<div class="notice notice-info"><p>' . esc_html__( 'Backups are stored inside the website\'s folder, protected by deny rules and an unguessable name. For the strongest setup, define BASTION_BACKUP_STORAGE in wp-config.php as a folder outside the website (see Settings).', 'bastion-backup' ) . '</p></div>';
 		}
 	}
 
-	private static function panel( string $title, string $sub, callable $body, string $actions = '', string $id = '' ): void {
-		printf( '<section class="bbk-panel"%s><header><div><h2>%s</h2>%s</div>%s</header><div class="bbk-body">', $id ? ' id="' . esc_attr( $id ) . '"' : '', esc_html( $title ), '' !== $sub ? '<p>' . wp_kses_post( $sub ) . '</p>' : '', $actions ? '<div class="bbk-actions">' . $actions . '</div>' : '' );
+	private static function panel( string $title, string $sub, callable $body, string $actions = '', string $id = '', string $icon = '' ): void {
+		printf( '<section class="bbk-panel"%s><header><div><h2>%s</h2>%s</div>%s</header><div class="bbk-body">', $id ? ' id="' . esc_attr( $id ) . '"' : '', $icon . esc_html( $title ), '' !== $sub ? '<p>' . wp_kses_post( $sub ) . '</p>' : '', $actions ? '<div class="bbk-actions">' . $actions . '</div>' : '' );
 		$body();
 		echo '</div></section>';
 	}
@@ -190,7 +218,7 @@ final class Admin {
 				foreach ( Registry::all() as $id => $d ) {
 					if ( $d->isConfigured() ) {
 						$any = true;
-						printf( '<label><input type="checkbox" class="bbk-c-dest" value="%s" %s> %s</label>', esc_attr( $id ), checked( in_array( $id, (array) $s['destinations'], true ), true, false ), esc_html( $d->label() ) );
+						printf( '<label><input type="checkbox" class="bbk-c-dest" value="%s" %s> %s%s</label>', esc_attr( $id ), checked( in_array( $id, (array) $s['destinations'], true ), true, false ), self::brand( $id, 18 ), esc_html( $d->label() ) );
 					}
 				}
 				if ( ! $any ) {
@@ -298,7 +326,7 @@ final class Admin {
 						echo '<p>' . esc_html( $where ) . '</p>';
 						echo '<p class="bbk-buttons">';
 						if ( ! $d->isConnected() ) {
-							printf( '<button type="button" class="button button-primary button-hero" data-bbk="device">%s</button> ', esc_html( sprintf( /* translators: %s: Google Drive or OneDrive */ __( 'Connect %s', 'bastion-backup' ), $d->label() ) ) );
+							printf( '<button type="button" class="button button-hero bbk-connect" data-bbk="device">%s%s</button> ', self::brand( $id, 24 ), esc_html( sprintf( /* translators: %s: Google Drive or OneDrive */ __( 'Connect %s', 'bastion-backup' ), $d->label() ) ) );
 						} else {
 							echo '<button type="button" class="button" data-bbk="test">' . esc_html__( 'Test', 'bastion-backup' ) . '</button> ';
 							echo '<button type="button" class="button bbk-danger" data-bbk="disconnect">' . esc_html__( 'Disconnect', 'bastion-backup' ) . '</button> ';
@@ -334,7 +362,10 @@ final class Admin {
 						echo '<button type="button" class="button bbk-danger" data-bbk="disconnect"' . ( $d->isConnected() ? '' : ' disabled' ) . '>' . esc_html__( 'Disconnect', 'bastion-backup' ) . '</button> ';
 					}
 					echo '<span class="bbk-result" aria-live="polite"></span></p></form></details>';
-				}
+				},
+				'',
+				'',
+				self::brand( $id, 24 )
 			);
 		}
 		$fs = new FileServer();
@@ -360,7 +391,10 @@ final class Admin {
 				echo '</tbody></table><p class="bbk-buttons"><button class="button button-primary">' . esc_html__( 'Save', 'bastion-backup' ) . '</button> ';
 				echo '<button type="button" class="button" data-bbk="test"' . ( $fs->isConfigured() ? '' : ' disabled' ) . '>' . esc_html__( 'Test', 'bastion-backup' ) . '</button> ';
 				echo '<button type="button" class="button bbk-danger" data-bbk="disconnect"' . ( $s ? '' : ' disabled' ) . '>' . esc_html__( 'Remove', 'bastion-backup' ) . '</button> <span class="bbk-result" aria-live="polite"></span></p></form>';
-			}
+			},
+			'',
+			'',
+			self::brand( 'fileserver', 24 )
 		);
 	}
 
@@ -375,7 +409,7 @@ final class Admin {
 		printf( '<tr><th scope="row">%s</th><td><label><input type="checkbox" name="backup_db" %s> %s</label><br><label><input type="checkbox" name="backup_files" %s> %s</label></td></tr>', esc_html__( 'What', 'bastion-backup' ), checked( $s['backup_db'], true, false ), esc_html__( 'Database', 'bastion-backup' ), checked( $s['backup_files'], true, false ), esc_html__( 'Files', 'bastion-backup' ) );
 		echo '<tr><th scope="row">' . esc_html__( 'Copy to', 'bastion-backup' ) . '</th><td>';
 		foreach ( Registry::all() as $id => $d ) {
-			printf( '<label><input type="checkbox" name="destinations[]" value="%s" %s %s> %s%s</label><br>', esc_attr( $id ), checked( in_array( $id, (array) $s['destinations'], true ), true, false ), disabled( ! $d->isConfigured() && ! in_array( $id, (array) $s['destinations'], true ), true, false ), esc_html( $d->label() ), $d->isConfigured() ? '' : ' <span class="description">(' . esc_html__( 'not set up', 'bastion-backup' ) . ')</span>' );
+			printf( '<label><input type="checkbox" name="destinations[]" value="%s" %s %s> %s%s%s</label><br>', esc_attr( $id ), checked( in_array( $id, (array) $s['destinations'], true ), true, false ), disabled( ! $d->isConfigured() && ! in_array( $id, (array) $s['destinations'], true ), true, false ), self::brand( $id, 18 ), esc_html( $d->label() ), $d->isConfigured() ? '' : ' <span class="description">(' . esc_html__( 'not set up', 'bastion-backup' ) . ')</span>' );
 		}
 		echo '</td></tr>';
 		printf( '<tr><th scope="row"><label for="bbk-s-rl">%s</label></th><td><input id="bbk-s-rl" name="retain_local" type="number" min="1" max="100" class="small-text" value="%d"> <label><input type="checkbox" name="keep_local" %s> %s</label></td></tr>', esc_html__( 'Keep on this server', 'bastion-backup' ), (int) $s['retain_local'], checked( $s['keep_local'], true, false ), esc_html__( 'Keep copies here at all (when off, a backup is deleted from this server once it is copied elsewhere)', 'bastion-backup' ) );
