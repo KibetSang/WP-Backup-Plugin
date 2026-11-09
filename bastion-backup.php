@@ -1,16 +1,16 @@
 <?php
 /**
  * Plugin Name:       Bastion Backup
- * Plugin URI:        https://example.com/bastion-backup
- * Description:       Security-first encrypted backup, migration and restore for WordPress. Database + files, streamed and resumable to 10 GB+, with Google Drive, OneDrive, Dropbox and S3-compatible storage.
- * Version:           0.9.0
+ * Description:       Encrypted backup, migration and restore. The whole site and database, in resumable steps to 10 GB and more, sealed to a backup key this site cannot open, and copied to Google Drive, OneDrive or your own SFTP/FTPS server.
+ * Version:           1.0.0
  * Requires at least: 6.4
  * Tested up to:      7.1
  * Requires PHP:      8.1
- * Author:            Bastion Backup
+ * Author:            Wingustar Solutions Ltd
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       bastion-backup
+ * Domain Path:       /languages
  * Network:           true
  *
  * @package BastionBackup
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'BASTION_BACKUP_VERSION', '0.9.0' );
+define( 'BASTION_BACKUP_VERSION', '1.0.0' );
 define( 'BASTION_BACKUP_FILE', __FILE__ );
 define( 'BASTION_BACKUP_DIR', __DIR__ );
 

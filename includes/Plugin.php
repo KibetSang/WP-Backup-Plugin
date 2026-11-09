@@ -21,6 +21,7 @@ final class Plugin {
 	}
 
 	public static function boot(): void {
+		add_action( 'init', static fn() => load_plugin_textdomain( 'bastion-backup', false, dirname( plugin_basename( BASTION_BACKUP_FILE ) ) . '/languages' ) );
 		add_filter( 'cron_schedules', array( self::class, 'schedules' ) );
 		add_action( self::CRON_SCHEDULED, array( Jobs::class, 'startScheduled' ) );
 		add_action( self::CRON_TICK, array( Jobs::class, 'cronTick' ), 10, 2 );

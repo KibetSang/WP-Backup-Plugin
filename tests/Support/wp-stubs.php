@@ -31,7 +31,7 @@ define( 'WP_PLUGIN_DIR', WP_CONTENT_DIR . '/plugins' );
 define( 'DB_HOST', (string) ( getenv( 'BBK_TEST_DB_HOST' ) ?: '127.0.0.1:3407' ) );
 define( 'DB_USER', (string) ( getenv( 'BBK_TEST_DB_USER' ) ?: 'wp' ) );
 define( 'DB_PASSWORD', (string) ( getenv( 'BBK_TEST_DB_PASS' ) ?: 'wp-dev-pass' ) );
-define( 'DB_NAME', 'wp' );
+define( 'DB_NAME', (string) ( getenv( 'BBK_TEST_WP_DB' ) ?: 'wp' ) );
 define( 'AUTH_KEY', str_repeat( 'a', 64 ) );
 define( 'SECURE_AUTH_KEY', str_repeat( 'b', 64 ) );
 define( 'MINUTE_IN_SECONDS', 60 );

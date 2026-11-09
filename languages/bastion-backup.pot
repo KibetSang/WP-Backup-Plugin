@@ -1,0 +1,944 @@
+# Copyright (C) 2026 Wingustar Solutions Ltd
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Bastion Backup 1.0.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-11-09 17:49+0000\n"
+"X-Domain: bastion-backup\n"
+
+#: bastion-backup.php:28
+msgid "Bastion Backup requires PHP 8.1+ with the sodium extension."
+msgstr ""
+
+#: includes/Admin.php:36 includes/Admin.php:36 includes/Admin.php:100
+msgid "Bastion Backup"
+msgstr ""
+
+#: includes/Admin.php:42 includes/Admin.php:206 includes/SiteHealth.php:29
+msgid "Backups"
+msgstr ""
+
+#: includes/Admin.php:43 includes/Admin.php:274
+msgid "Restore"
+msgstr ""
+
+#: includes/Admin.php:44
+msgid "Destinations"
+msgstr ""
+
+#: includes/Admin.php:45
+msgid "Schedule & retention"
+msgstr ""
+
+#: includes/Admin.php:46
+msgid "Settings"
+msgstr ""
+
+#: includes/Admin.php:47
+msgid "Installer"
+msgstr ""
+
+#: includes/Admin.php:48
+msgid "Logs"
+msgstr ""
+
+#: includes/Admin.php:85
+msgid "Delete this backup? It cannot be brought back."
+msgstr ""
+
+#: includes/Admin.php:86
+msgid "Working…"
+msgstr ""
+
+#: includes/Admin.php:87
+msgid "Copied."
+msgstr ""
+
+#: includes/Admin.php:88
+msgid "You can close this page: the job carries on in the background and this page picks it up again when you come back."
+msgstr ""
+
+#: includes/Admin.php:96 includes/Ajax.php:37
+msgid "You are not allowed to manage backups."
+msgstr ""
+
+#: includes/Admin.php:101
+msgid "Encrypted copies of the whole site: WordPress, themes, plugins, uploads and the whole database. Only the backup key opens them, and this site does not have it."
+msgstr ""
+
+#: includes/Admin.php:103
+msgid "Bastion Backup sections"
+msgstr ""
+
+#: includes/Admin.php:121
+#, php-format
+msgid "%s is connected. Press Test to check it, then choose it under Schedule & retention."
+msgstr ""
+
+#: includes/Admin.php:126
+msgid "Connecting did not finish."
+msgstr ""
+
+#: includes/Admin.php:129
+#, php-format
+msgid "No backups are made until there is a backup key. <a href=\"%s\">Make the backup key</a>."
+msgstr ""
+
+#: includes/Admin.php:132
+msgid "Backups are stored inside the website's folder, protected by deny rules and an unguessable name. For the strongest setup, define BASTION_BACKUP_STORAGE in wp-config.php as a folder outside the website (see Settings)."
+msgstr ""
+
+#: includes/Admin.php:145 includes/Admin.php:263 includes/SiteHealth.php:18
+msgid "Backup key"
+msgstr ""
+
+#: includes/Admin.php:146
+msgid "Backups are encrypted to this key. Only its public half is on this site."
+msgstr ""
+
+#: includes/Admin.php:154
+#, php-format
+msgid "Key <b class=\"bbk-ref\">%1$s</b>, made %2$s by %3$s."
+msgstr ""
+
+#: includes/Admin.php:161
+msgid "Replace the key…"
+msgstr ""
+
+#: includes/Admin.php:163
+msgid "No backup key yet, so no backups are made. Make the key now: it is shown once, for you to keep safe."
+msgstr ""
+
+#: includes/Admin.php:167
+#, php-format
+msgid "A new key is used for the backups made from now on. The backups already made still need the old key (%s), so keep it until they are deleted. Replace the key if the old one may have been seen by someone else."
+msgstr ""
+
+#: includes/Admin.php:169 includes/Admin.php:276 includes/Admin.php:410
+msgid "Your WordPress password"
+msgstr ""
+
+#: includes/Admin.php:171
+msgid "Make a new key"
+msgstr ""
+
+#: includes/Admin.php:171 includes/SiteHealth.php:45
+msgid "Make the backup key"
+msgstr ""
+
+#: includes/Admin.php:173 includes/Admin.php:278
+msgid "Cancel"
+msgstr ""
+
+#: includes/Admin.php:180 includes/SiteHealth.php:58
+msgid "Back up now"
+msgstr ""
+
+#: includes/Admin.php:182
+msgid "Make a backup"
+msgstr ""
+
+#: includes/Admin.php:183
+msgid "Large sites are backed up in short steps, so it works on any hosting. The copy to Google Drive, OneDrive or your file server follows straight after."
+msgstr ""
+
+#: includes/Admin.php:185
+msgid "What to back up"
+msgstr ""
+
+#: includes/Admin.php:186 includes/Admin.php:358
+msgid "Database"
+msgstr ""
+
+#: includes/Admin.php:187
+msgid "Files (WordPress, themes, plugins, uploads)"
+msgstr ""
+
+#: includes/Admin.php:188
+msgid "Also copy it to"
+msgstr ""
+
+#: includes/Admin.php:197
+#, php-format
+msgid "Nowhere yet. <a href=\"%s\">Set up Google Drive, OneDrive or a file server</a> to keep copies off this server."
+msgstr ""
+
+#: includes/Admin.php:210
+#, php-format
+msgid "%1$s The newest %2$d are kept on this server.%3$s"
+msgstr ""
+
+#: includes/Admin.php:211
+msgid "No backups are scheduled."
+msgstr ""
+
+#: includes/Admin.php:211
+#, php-format
+msgid "A backup is made %s."
+msgstr ""
+
+#: includes/Admin.php:213
+#, php-format
+msgid "Free space: %s."
+msgstr ""
+
+#: includes/Admin.php:217
+msgid "Made"
+msgstr ""
+
+#: includes/Admin.php:217
+msgid "Size"
+msgstr ""
+
+#: includes/Admin.php:217
+msgid "Kept on"
+msgstr ""
+
+#: includes/Admin.php:217
+msgid "Key"
+msgstr ""
+
+#: includes/Admin.php:217
+msgid "Check"
+msgstr ""
+
+#: includes/Admin.php:217
+msgid "Actions"
+msgstr ""
+
+#: includes/Admin.php:218
+msgid "Loading…"
+msgstr ""
+
+#: includes/Admin.php:220
+msgid "Refresh"
+msgstr ""
+
+#: includes/Admin.php:224
+msgid "Restoring"
+msgstr ""
+
+#: includes/Admin.php:225
+msgid "On this site from the Restore tab, or on a new server with the installer (like Duplicator's installer.php)."
+msgstr ""
+
+#: includes/Admin.php:228
+msgid "Choose the backup: one in the list above, one on Google Drive, OneDrive or your file server, or a .bbk file from your computer."
+msgstr ""
+
+#: includes/Admin.php:229
+msgid "Paste the backup key and press Check. Every part of the backup is read and checked first; nothing on the site changes unless the whole backup is intact."
+msgstr ""
+
+#: includes/Admin.php:230
+msgid "See what the backup holds, choose the database, the files or both, and confirm with your WordPress password and the word RESTORE."
+msgstr ""
+
+#: includes/Admin.php:231
+msgid "Visitors see a short maintenance page while it runs. The database is swapped in all at once at the end, so the site is never half restored."
+msgstr ""
+
+#: includes/Admin.php:232
+#, php-format
+msgid "Site gone or moving server? Use the <a href=\"%s\">installer</a> with the backup file on the new server."
+msgstr ""
+
+#: includes/Admin.php:240
+msgid "every hour"
+msgstr ""
+
+#: includes/Admin.php:241
+msgid "twice a day"
+msgstr ""
+
+#: includes/Admin.php:242
+#, php-format
+msgid "every day at %s"
+msgstr ""
+
+#: includes/Admin.php:243
+#, php-format
+msgid "every week at %s"
+msgstr ""
+
+#: includes/Admin.php:251
+msgid "1. Choose the backup"
+msgstr ""
+
+#: includes/Admin.php:252
+msgid "Pick it from the list of backups, or send a .bbk file from your computer. Large files go up in pieces, so any size works."
+msgstr ""
+
+#: includes/Admin.php:254
+#, php-format
+msgid "No backup chosen. Press Restore beside one on the <a href=\"%s\">Backups</a> tab, or upload one:"
+msgstr ""
+
+#: includes/Admin.php:255
+msgid "Backup file"
+msgstr ""
+
+#: includes/Admin.php:255
+msgid "Upload"
+msgstr ""
+
+#: includes/Admin.php:260
+msgid "2. Check it with the key"
+msgstr ""
+
+#: includes/Admin.php:261
+msgid "The key that was shown when the backup key was made (BBK-…). It is kept only in this job, encrypted, and forgotten when the job ends."
+msgstr ""
+
+#: includes/Admin.php:265
+msgid "Check the backup"
+msgstr ""
+
+#: includes/Admin.php:269
+msgid "3. Confirm and restore"
+msgstr ""
+
+#: includes/Admin.php:270
+msgid "DISALLOW_FILE_MODS is set in wp-config.php, so only the database can be restored here. Use the installer for files."
+msgstr ""
+
+#: includes/Admin.php:270
+msgid "Shown once the backup has been checked."
+msgstr ""
+
+#: includes/Admin.php:274
+msgid "The database"
+msgstr ""
+
+#: includes/Admin.php:274
+msgid "The files"
+msgstr ""
+
+#: includes/Admin.php:275
+msgid "wp-config.php, this plugin and its backups are never overwritten here. After the restore you may need to sign in again."
+msgstr ""
+
+#: includes/Admin.php:277
+msgid "Type RESTORE to confirm"
+msgstr ""
+
+#: includes/Admin.php:278
+msgid "Restore now"
+msgstr ""
+
+#: includes/Admin.php:290
+#, php-format
+msgid "Connected%s."
+msgstr ""
+
+#: includes/Admin.php:290
+#, php-format
+msgid "as %s"
+msgstr ""
+
+#: includes/Admin.php:290
+msgid "App saved; not connected yet."
+msgstr ""
+
+#: includes/Admin.php:290 includes/Admin.php:327
+msgid "Not set up."
+msgstr ""
+
+#: includes/Admin.php:295
+msgid "How to create the app (once)"
+msgstr ""
+
+#: includes/Admin.php:297
+msgid "Open <a href=\"https://console.cloud.google.com/apis/credentials\" target=\"_blank\" rel=\"noopener noreferrer\">Google Cloud Console → Credentials</a> with the Google account that should hold the backups. Create a project if asked."
+msgstr ""
+
+#: includes/Admin.php:298
+msgid "Enable the Google Drive API (APIs & Services → Library → Google Drive API → Enable)."
+msgstr ""
+
+#: includes/Admin.php:299
+msgid "OAuth consent screen: External (or Internal for Google Workspace), add your address as a test user, and publish it to Production so access does not expire after 7 days. Scope: …/auth/drive.file only."
+msgstr ""
+
+#: includes/Admin.php:300
+msgid "Create credentials → OAuth client ID → Web application. Under Authorized redirect URIs, paste the address below."
+msgstr ""
+
+#: includes/Admin.php:302
+msgid "Open <a href=\"https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade\" target=\"_blank\" rel=\"noopener noreferrer\">Microsoft Entra → App registrations</a> and press New registration."
+msgstr ""
+
+#: includes/Admin.php:303
+msgid "Supported account types: personal Microsoft accounts and/or your organisation. Redirect URI: Web, the address below."
+msgstr ""
+
+#: includes/Admin.php:304
+msgid "API permissions → Microsoft Graph → Delegated: Files.ReadWrite.AppFolder, offline_access, User.Read. Certificates & secrets → New client secret; copy its Value (it is shown once)."
+msgstr ""
+
+#: includes/Admin.php:305
+msgid "Backups go into Apps/<your app name>/<folder> in OneDrive; the app cannot see anything else."
+msgstr ""
+
+#: includes/Admin.php:307
+msgid "Paste the client ID and secret here, save, then press Connect and allow access."
+msgstr ""
+
+#: includes/Admin.php:308
+msgid "Redirect URI"
+msgstr ""
+
+#: includes/Admin.php:308
+msgid "Copy"
+msgstr ""
+
+#: includes/Admin.php:310
+msgid "Client ID"
+msgstr ""
+
+#: includes/Admin.php:311
+msgid "Client secret"
+msgstr ""
+
+#: includes/Admin.php:311 includes/Admin.php:340
+msgid "saved — type to replace"
+msgstr ""
+
+#: includes/Admin.php:312 includes/Admin.php:337
+msgid "Folder"
+msgstr ""
+
+#: includes/Admin.php:314
+msgid "Tenant"
+msgstr ""
+
+#: includes/Admin.php:314
+msgid "common for any account, consumers for personal only, or your organisation's tenant ID."
+msgstr ""
+
+#: includes/Admin.php:316 includes/Admin.php:343 includes/Admin.php:367 includes/Admin.php:381
+msgid "Save"
+msgstr ""
+
+#: includes/Admin.php:317
+msgid "Connect again"
+msgstr ""
+
+#: includes/Admin.php:317
+msgid "Connect"
+msgstr ""
+
+#: includes/Admin.php:318 includes/Admin.php:344
+msgid "Test"
+msgstr ""
+
+#: includes/Admin.php:319
+msgid "Disconnect"
+msgstr ""
+
+#: includes/Admin.php:327
+msgid "Set up."
+msgstr ""
+
+#: includes/Admin.php:327
+msgid "Your own server or NAS, over SFTP (SSH) or FTPS. Plain FTP is not offered: it sends the password unencrypted."
+msgstr ""
+
+#: includes/Admin.php:331
+msgid "Connection"
+msgstr ""
+
+#: includes/Admin.php:332
+msgid "FTPS (explicit TLS, port 21)"
+msgstr ""
+
+#: includes/Admin.php:332
+msgid "FTPS (implicit TLS, port 990)"
+msgstr ""
+
+#: includes/Admin.php:336
+msgid "Server"
+msgstr ""
+
+#: includes/Admin.php:336
+msgid "Port"
+msgstr ""
+
+#: includes/Admin.php:337
+msgid "Without a leading / it is inside the login's home folder. It is made if missing."
+msgstr ""
+
+#: includes/Admin.php:338
+msgid "Login"
+msgstr ""
+
+#: includes/Admin.php:339
+msgid "Sign in with"
+msgstr ""
+
+#: includes/Admin.php:339 includes/Admin.php:340
+msgid "Password"
+msgstr ""
+
+#: includes/Admin.php:339
+msgid "SSH private key (SFTP)"
+msgstr ""
+
+#: includes/Admin.php:341
+msgid "Private key"
+msgstr ""
+
+#: includes/Admin.php:341
+msgid "saved — paste to replace"
+msgstr ""
+
+#: includes/Admin.php:341
+msgid "Key passphrase (if any)"
+msgstr ""
+
+#: includes/Admin.php:341
+msgid "Use a key made only for backups, allowed only into the backup folder."
+msgstr ""
+
+#: includes/Admin.php:342
+msgid "Host key fingerprint"
+msgstr ""
+
+#: includes/Admin.php:342
+msgid "So a server pretending to be yours is refused. On a computer you trust, run:"
+msgstr ""
+
+#: includes/Admin.php:345
+msgid "Remove"
+msgstr ""
+
+#: includes/Admin.php:353
+msgid "Back up automatically"
+msgstr ""
+
+#: includes/Admin.php:354
+msgid "Never (only when I press Back up now)"
+msgstr ""
+
+#: includes/Admin.php:354
+msgid "Every hour"
+msgstr ""
+
+#: includes/Admin.php:354
+msgid "Twice a day"
+msgstr ""
+
+#: includes/Admin.php:354
+msgid "Every day"
+msgstr ""
+
+#: includes/Admin.php:354
+msgid "Every week"
+msgstr ""
+
+#: includes/Admin.php:357
+msgid "at"
+msgstr ""
+
+#: includes/Admin.php:357
+#, php-format
+msgid "Daily and weekly backups start at this time (%s). WordPress runs scheduled work when the site has visitors; for exact times, have the host call wp-cron.php every few minutes."
+msgstr ""
+
+#: includes/Admin.php:358 includes/Admin.php:438
+msgid "What"
+msgstr ""
+
+#: includes/Admin.php:358
+msgid "Files"
+msgstr ""
+
+#: includes/Admin.php:359
+msgid "Copy to"
+msgstr ""
+
+#: includes/Admin.php:361
+msgid "not set up"
+msgstr ""
+
+#: includes/Admin.php:364
+msgid "Keep on this server"
+msgstr ""
+
+#: includes/Admin.php:364
+msgid "Keep copies here at all (when off, a backup is deleted from this server once it is copied elsewhere)"
+msgstr ""
+
+#: includes/Admin.php:365
+msgid "Keep at each destination"
+msgstr ""
+
+#: includes/Admin.php:365
+msgid "Older ones are deleted after each backup. Only backups this plugin made are ever deleted."
+msgstr ""
+
+#: includes/Admin.php:374
+msgid "Leave out"
+msgstr ""
+
+#: includes/Admin.php:374
+msgid "One per line: a path from the WordPress folder (wp-content/cache) or a pattern (*.log). This plugin's own backups are always left out."
+msgstr ""
+
+#: includes/Admin.php:375
+msgid "Largest file"
+msgstr ""
+
+#: includes/Admin.php:375
+msgid "0 for no limit. Larger files are left out and listed in the log."
+msgstr ""
+
+#: includes/Admin.php:376
+msgid "Database tables"
+msgstr ""
+
+#: includes/Admin.php:376
+#, php-format
+msgid "All tables in the database, not only those starting with %s"
+msgstr ""
+
+#: includes/Admin.php:376
+msgid "Leave out these tables (one per line):"
+msgstr ""
+
+#: includes/Admin.php:377
+msgid "Step length"
+msgstr ""
+
+#: includes/Admin.php:377
+msgid "seconds"
+msgstr ""
+
+#: includes/Admin.php:377
+#, php-format
+msgid "How long each step works before saving its place. Never more than 60% of PHP's time limit. Lower it if the host stops long requests."
+msgstr ""
+
+#: includes/Admin.php:378
+msgid "Email"
+msgstr ""
+
+#: includes/Admin.php:378
+msgid "when a backup fails or has warnings"
+msgstr ""
+
+#: includes/Admin.php:378
+msgid "after every backup"
+msgstr ""
+
+#: includes/Admin.php:378
+msgid "never"
+msgstr ""
+
+#: includes/Admin.php:379
+msgid "Uninstalling"
+msgstr ""
+
+#: includes/Admin.php:379
+msgid "Also delete the backups kept on this server when the plugin is deleted"
+msgstr ""
+
+#: includes/Admin.php:384
+msgid "Stronger setup (wp-config.php)"
+msgstr ""
+
+#: includes/Admin.php:388
+msgid "A folder outside the website for backups and working files, e.g. /home/account/bastion-backups."
+msgstr ""
+
+#: includes/Admin.php:389
+msgid "A long random value (64+ characters) that encrypts the saved Google, Microsoft and file server credentials, instead of the WordPress salts."
+msgstr ""
+
+#: includes/Admin.php:393
+msgid "Set"
+msgstr ""
+
+#: includes/Admin.php:393
+msgid "Not set"
+msgstr ""
+
+#: includes/Admin.php:395
+#, php-format
+msgid "Backups are kept in %s."
+msgstr ""
+
+#: includes/Admin.php:403
+msgid "Installer for a new server"
+msgstr ""
+
+#: includes/Admin.php:404
+msgid "A single installer.php that restores a backup on any server with PHP 8.1 and a MySQL database, like Duplicator's. It is locked with an access key shown once, and deletes itself when it has finished."
+msgstr ""
+
+#: includes/Admin.php:407
+#, php-format
+msgid "The last installer was made %s. Making a new one makes the old access key useless."
+msgstr ""
+
+#: includes/Admin.php:410
+msgid "Make installer.php"
+msgstr ""
+
+#: includes/Admin.php:414
+msgid "Disaster recovery in 5 steps"
+msgstr ""
+
+#: includes/Admin.php:418
+msgid "On the new server, make an empty database and a database user for it, and point the domain at an empty folder (HTTPS on)."
+msgstr ""
+
+#: includes/Admin.php:419
+msgid "Upload installer.php and the .bbk backup file into that folder (downloaded from here, Google Drive, OneDrive or your file server)."
+msgstr ""
+
+#: includes/Admin.php:420
+msgid "Open https://<your site>/installer.php and enter the installer's access key."
+msgstr ""
+
+#: includes/Admin.php:421
+msgid "Choose the backup, paste the backup key (BBK-…) and the new database details, press Test connection, then Check, then Restore. Nothing is written unless the whole backup is intact."
+msgstr ""
+
+#: includes/Admin.php:422
+msgid "Sign in to the restored site. The installer deletes itself and its working folder; if it says it could not, delete installer.php by hand straight away."
+msgstr ""
+
+#: includes/Admin.php:431
+msgid "Who did what"
+msgstr ""
+
+#: includes/Admin.php:432
+msgid "Every backup, restore, key change, connection and deletion, newest first."
+msgstr ""
+
+#: includes/Admin.php:435
+msgid "Nothing yet."
+msgstr ""
+
+#: includes/Admin.php:438
+msgid "When"
+msgstr ""
+
+#: includes/Admin.php:438
+msgid "Who"
+msgstr ""
+
+#: includes/Admin.php:438
+msgid "Details"
+msgstr ""
+
+#: includes/Admin.php:438
+msgid "From"
+msgstr ""
+
+#: includes/Admin.php:447
+msgid "Latest job"
+msgstr ""
+
+#: includes/Admin.php:451
+msgid "No job yet."
+msgstr ""
+
+#: includes/Admin.php:456
+msgid "Download the whole log"
+msgstr ""
+
+#: includes/Ajax.php:40
+msgid "This page has expired. Reload it and try again."
+msgstr ""
+
+#: includes/Ajax.php:67
+msgid "Too many wrong passwords. Wait 15 minutes and try again."
+msgstr ""
+
+#: includes/Ajax.php:72
+msgid "That is not your WordPress password."
+msgstr ""
+
+#: includes/Ajax.php:88 includes/Ajax.php:198
+msgid "Choose the database, the files or both."
+msgstr ""
+
+#: includes/Ajax.php:106
+msgid "Wait for the running job to finish before changing the key."
+msgstr ""
+
+#: includes/Ajax.php:151
+msgid "Only backups made by this plugin can be deleted here."
+msgstr ""
+
+#: includes/Ajax.php:192
+msgid "Type RESTORE, in capitals, to confirm."
+msgstr ""
+
+#: includes/Ajax.php:202
+msgid "Check the backup first."
+msgstr ""
+
+#: includes/Ajax.php:208
+msgid "Restoring…"
+msgstr ""
+
+#: includes/Ajax.php:221
+msgid "A piece of the upload did not arrive. It will be sent again."
+msgstr ""
+
+#: includes/Ajax.php:241 includes/Ajax.php:267
+msgid "Saved."
+msgstr ""
+
+#: includes/Ajax.php:253
+msgid "That does not look like a client ID."
+msgstr ""
+
+#: includes/Ajax.php:289
+msgid "Removed. Backups already there are left as they are."
+msgstr ""
+
+#: includes/Ajax.php:297
+msgid "Working: a test file was written and deleted."
+msgstr ""
+
+#: includes/Ajax.php:313 includes/Ajax.php:330 includes/Ajax.php:342
+msgid "Not allowed."
+msgstr ""
+
+#: includes/Ajax.php:322
+msgid "That backup is no longer on this server."
+msgstr ""
+
+#: includes/Ajax.php:347
+msgid "No such log."
+msgstr ""
+
+#: includes/Plugin.php:47
+msgid "Once Weekly"
+msgstr ""
+
+#: includes/Plugin.php:102
+msgid "This site is being restored from a backup. Please check back in a few minutes."
+msgstr ""
+
+#: includes/Plugin.php:103
+msgid "Maintenance"
+msgstr ""
+
+#: includes/SiteHealth.php:17
+msgid "Backup encryption"
+msgstr ""
+
+#: includes/SiteHealth.php:19
+msgid "Recent backup"
+msgstr ""
+
+#: includes/SiteHealth.php:20 includes/SiteHealth.php:69
+msgid "Scheduled backups run"
+msgstr ""
+
+#: includes/SiteHealth.php:21
+msgid "Backups not reachable from the web"
+msgstr ""
+
+#: includes/SiteHealth.php:38
+msgid "Backups can be encrypted"
+msgstr ""
+
+#: includes/SiteHealth.php:38
+msgid "PHP's sodium extension is present."
+msgstr ""
+
+#: includes/SiteHealth.php:39
+msgid "Backups cannot be encrypted"
+msgstr ""
+
+#: includes/SiteHealth.php:39
+msgid "Ask the host to enable PHP's sodium extension."
+msgstr ""
+
+#: includes/SiteHealth.php:44
+msgid "A backup key is set"
+msgstr ""
+
+#: includes/SiteHealth.php:44
+msgid "Backups are encrypted to a key this site cannot open."
+msgstr ""
+
+#: includes/SiteHealth.php:45
+msgid "No backup key: no backups are made"
+msgstr ""
+
+#: includes/SiteHealth.php:45
+msgid "Make the backup key in Bastion Backup."
+msgstr ""
+
+#: includes/SiteHealth.php:56
+msgid "There is a recent backup"
+msgstr ""
+
+#: includes/SiteHealth.php:56 includes/SiteHealth.php:58
+#, php-format
+msgid "The last backup was made %s ago."
+msgstr ""
+
+#: includes/SiteHealth.php:58
+msgid "No backup in the last week"
+msgstr ""
+
+#: includes/SiteHealth.php:58
+msgid "No backup has been made yet."
+msgstr ""
+
+#: includes/SiteHealth.php:63
+msgid "Backups are not scheduled"
+msgstr ""
+
+#: includes/SiteHealth.php:63
+msgid "Backups are made only when someone presses Back up now."
+msgstr ""
+
+#: includes/SiteHealth.php:67
+msgid "Scheduled backups may not run"
+msgstr ""
+
+#: includes/SiteHealth.php:67
+msgid "WordPress's scheduler looks stopped. If DISABLE_WP_CRON is set, the host must call wp-cron.php every few minutes."
+msgstr ""
+
+#: includes/SiteHealth.php:69
+#, php-format
+msgid "The next one starts in %s."
+msgstr ""
+
+#: includes/SiteHealth.php:75
+msgid "Backups are outside the website"
+msgstr ""
+
+#: includes/SiteHealth.php:75
+msgid "The storage folder is not inside the website's folder."
+msgstr ""
+
+#: includes/SiteHealth.php:86
+msgid "Backups can be downloaded from the web"
+msgstr ""
+
+#: includes/SiteHealth.php:86
+msgid "The web server ignores the deny rules (e.g. Nginx without them). Define BASTION_BACKUP_STORAGE in wp-config.php as a folder outside the website, or add a deny rule for the folder."
+msgstr ""
+
+#: includes/SiteHealth.php:88
+msgid "Backups cannot be downloaded from the web"
+msgstr ""
+
+#: includes/SiteHealth.php:88
+msgid "A test file in the storage folder could not be fetched over HTTP."
+msgstr ""
+

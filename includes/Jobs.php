@@ -93,7 +93,8 @@ final class Jobs {
 			}
 			return self::status(); // Another request is stepping it right now.
 		}
-		$id = (string) $cur['id'];
+		$id       = (string) $cur['id'];
+		$deadline = $deadline ?? self::deadline(); // Before set_time_limit(0), which would hide PHP's own limit.
 		try {
 			$st = self::loadState( $id );
 			if ( null === $st ) {
@@ -109,7 +110,7 @@ final class Jobs {
 			$log = new Logger( $id );
 			$job = self::job( (string) $st['type'] );
 			try {
-				$job->step( $st, $deadline ?? self::deadline(), $log );
+				$job->step( $st, $deadline, $log );
 			} catch ( \Throwable $e ) {
 				$msg = $e instanceof BackupException ? $e->getMessage() : 'Unexpected error: ' . $e->getMessage();
 				$log->error( $msg );

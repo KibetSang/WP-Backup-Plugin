@@ -1,0 +1,90 @@
+=== Bastion Backup ===
+Contributors: wingustar
+Tags: backup, restore, migration, google drive, onedrive
+Requires at least: 6.4
+Tested up to: 7.1
+Requires PHP: 8.1
+Stable tag: 1.0.0
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Encrypted backups of the whole site and database, to 10 GB and more, sealed to a key this site cannot open. Copies to Google Drive, OneDrive or your own SFTP/FTPS server; restores here or on a new server.
+
+== Description ==
+
+Bastion Backup makes a complete backup of your WordPress site: WordPress itself, themes, plugins, uploads and the whole database, in one encrypted .bbk file.
+
+**Encrypted to a backup key the site does not have.** When you make the backup key, its secret half is shown to you once (BBK-…) and the site keeps only the public half. The site can make backups but can never open them, so someone who breaks into the site, the database or the cloud account cannot read your backups either. Keep the key in your password manager: without it no one can restore a backup, including us.
+
+**Any size, any host.** Backups and restores run in short steps (20 seconds by default) that save their place, with memory near 32 MB whatever the size of the site. Tested at 10 GB with memory_limit=128M. They carry on in the background when you close the page, and WP-CLI runs them without a browser.
+
+**Copies elsewhere.** After each backup a copy goes to Google Drive (access only to files this plugin makes), OneDrive (the plugin's own app folder only) or your own server over SFTP or FTPS. Uploads resume where they stopped. The newest N are kept in each place; only backups this plugin made are ever deleted.
+
+**Safe restores.** A restore first reads and checks every byte of the backup and changes nothing unless all of it is intact. You confirm with your WordPress password and the word RESTORE. The database is loaded into temporary tables and swapped in at once at the end; files are written beside the old ones and renamed into place. wp-config.php, this plugin and its backups are never overwritten from the dashboard.
+
+**Moving or rebuilding a site.** The installer (installer.php) restores a backup on any server with PHP 8.1 and MySQL or MariaDB, like Duplicator's installer: new address, new database and new table prefix included. It is locked with an access key and deletes itself when it has finished.
+
+== Installation ==
+
+1. Upload the plugin and activate it.
+2. Open Bastion Backup → Backups and press **Make the backup key**. Store the key that is shown, as it is shown only once.
+3. Press **Back up now**, or set a schedule under Schedule & retention.
+4. Optional: set up Google Drive, OneDrive or a file server under Destinations and choose it under Schedule & retention.
+
+= Stronger setup (wp-config.php) =
+
+* `define( 'BASTION_BACKUP_STORAGE', '/home/account/bastion-backups' );` keeps backups and working files outside the website.
+* `define( 'BASTION_BACKUP_SECRET', '…64 or more random characters…' );` encrypts the saved Google, Microsoft and file server credentials with this value instead of the WordPress salts.
+
+= Google Drive =
+
+1. In Google Cloud Console (APIs & Services), create a project and enable the Google Drive API.
+2. OAuth consent screen: External (or Internal on Google Workspace). Add only the scope `…/auth/drive.file`. Publish it to Production, or test users lose access after 7 days.
+3. Credentials → Create credentials → OAuth client ID → Web application. Under Authorized redirect URIs, paste the address shown on the Destinations tab (it ends in `/wp-json/bastion-backup/v1/oauth`).
+4. Paste the client ID and secret in Bastion Backup → Destinations → Google Drive, Save, press Connect and allow access. Then press Test.
+
+= OneDrive =
+
+1. In Microsoft Entra → App registrations → New registration. Choose who may sign in (personal accounts, your organisation, or both). Redirect URI: Web, the address shown on the Destinations tab.
+2. API permissions → Microsoft Graph → Delegated: `Files.ReadWrite.AppFolder`, `offline_access`, `User.Read`.
+3. Certificates & secrets → New client secret. Copy its value straight away.
+4. Paste the client ID and secret in Destinations → OneDrive (tenant `common`, `consumers` or your tenant ID), Save, Connect, Test. Backups go into Apps/<app name>/<folder>.
+
+= File server (SFTP or FTPS) =
+
+1. Make a login on the server used only for backups, allowed only into the backup folder.
+2. For SFTP, get the server's host key fingerprint on a computer you trust: `ssh-keyscan -t ed25519 your.server | ssh-keygen -lf -` and paste the `SHA256:…` value. A server that shows another key is refused.
+3. Enter the server, folder, login and password (or an SSH private key), Save, Test. Plain FTP is not offered because it sends the password unencrypted.
+
+== Frequently Asked Questions ==
+
+= I lost the backup key. =
+
+Then the backups made with it cannot be opened by anyone. Make a new key straight away (Backups → Replace the key) and a new backup. Keep two copies of the key in safe places.
+
+= Why can the site not open its own backups? =
+
+So that a break-in does not expose them. The site keeps only the public half of the key, which can lock but not unlock.
+
+= Does it work on Nginx? =
+
+Yes. Nginx ignores .htaccess, so Tools → Site Health checks whether the backup folder can be fetched from the web. If it can, set BASTION_BACKUP_STORAGE to a folder outside the website (recommended anyway).
+
+= WP-CLI =
+
+`wp bastion backup [--db-only] [--files-only] [--no-upload] [--to=google,onedrive,fileserver]`
+`wp bastion verify <backup>` and `wp bastion restore <backup> [--db-only] [--files-only] [--yes]` (the key from BASTION_BACKUP_KEY, --key or typed when asked)
+`wp bastion list [--destination=google]`, `wp bastion status`, `wp bastion cancel`
+
+= Disaster recovery in 5 steps =
+
+1. On the new server, make an empty database and user, and point the domain at an empty folder with HTTPS.
+2. Upload installer.php (Bastion Backup → Installer) and the .bbk file into that folder.
+3. Open https://your-site/installer.php and enter the installer's access key.
+4. Choose the backup, paste the backup key and the database details, press Test connection, Check the backup, then Restore.
+5. Sign in. The installer deletes itself; if it reports it could not, delete installer.php by hand at once.
+
+== Changelog ==
+
+= 1.0.0 =
+* First release: encrypted backups sealed to a backup key, resumable to 10 GB and more, Google Drive, OneDrive and SFTP/FTPS destinations, dashboard restore with an atomic database swap, standalone installer, WP-CLI, Site Health checks.
