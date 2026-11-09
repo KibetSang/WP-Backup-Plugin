@@ -4,7 +4,7 @@ Tags: backup, restore, migration, google drive, onedrive
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -81,6 +81,10 @@ Yes. Nginx ignores .htaccess, so Tools → Site Health checks whether the backup
 5. Sign in. The installer deletes itself; if it reports it could not, delete installer.php by hand at once.
 
 == Changelog ==
+
+= 1.0.2 =
+* Settings → Server check shows what the PHP running the site really has: version, build (cPanel EasyApache, CloudLinux, Plesk), php.ini, sodium.
+* The advice for turning sodium on now matches the server: on cPanel's EasyApache PHP it is the ea-phpXX-php-sodium package, which "Select PHP Version" does not change.
 
 = 1.0.1 =
 * Works where PHP's sodium extension is off: it uses WordPress's built-in copy (slower) and says so, instead of refusing to start.

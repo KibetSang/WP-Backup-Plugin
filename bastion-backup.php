@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Bastion Backup
  * Description:       Encrypted backup, migration and restore. The whole site and database, in resumable steps to 10 GB and more, sealed to a backup key this site cannot open, and copied to Google Drive, OneDrive or your own SFTP/FTPS server.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Requires at least: 6.4
  * Tested up to:      7.1
  * Requires PHP:      8.1
@@ -20,7 +20,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'BASTION_BACKUP_VERSION', '1.0.1' );
+define( 'BASTION_BACKUP_VERSION', '1.0.2' );
 define( 'BASTION_BACKUP_FILE', __FILE__ );
 define( 'BASTION_BACKUP_DIR', __DIR__ );
 

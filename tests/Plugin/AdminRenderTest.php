@@ -29,7 +29,7 @@ final class AdminRenderTest extends SiteCase {
 			'restore'      => array( '1. Choose the backup', 'Type RESTORE to confirm' ),
 			'destinations' => array( 'Google Drive', 'OneDrive', 'File server (SFTP / FTPS)', '/wp-json/bastion-backup/v1/oauth', 'Host key fingerprint' ),
 			'schedule'     => array( 'Back up automatically', 'Keep on this server' ),
-			'settings'     => array( 'Leave out', 'BASTION_BACKUP_STORAGE' ),
+			'settings'     => array( 'Leave out', 'BASTION_BACKUP_STORAGE', 'Server check', 'sodium extension', 'Encryption used' ),
 			'installer'    => array( 'Make installer.php', 'Disaster recovery in 5 steps' ),
 			'logs'         => array( 'Who did what' ),
 		);

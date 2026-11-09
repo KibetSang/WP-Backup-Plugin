@@ -40,7 +40,7 @@ final class SiteHealth {
 		return \BastionBackup\Core\Crypto::native()
 			? self::result( 'bastion_backup_sodium', 'good', __( 'Backups are encrypted at full speed', 'bastion-backup' ), __( 'PHP\'s sodium extension is loaded.', 'bastion-backup' ) )
 			/* translators: %s: PHP version */
-			: self::result( 'bastion_backup_sodium', 'recommended', __( 'Backups are encrypted slowly', 'bastion-backup' ), sprintf( __( 'PHP %s here has no sodium extension, so WordPress\'s built-in copy is used (about 1,000 times slower). Turn on the sodium extension for this PHP version.', 'bastion-backup' ), PHP_VERSION ) );
+			: self::result( 'bastion_backup_sodium', 'recommended', __( 'Backups are encrypted slowly', 'bastion-backup' ), sprintf( __( 'PHP %s here has no sodium extension, so WordPress\'s built-in copy is used (about 1,000 times slower).', 'bastion-backup' ), PHP_VERSION ) . ' ' . ServerCheck::sodiumAdvice() );
 	}
 
 	public static function key(): array {

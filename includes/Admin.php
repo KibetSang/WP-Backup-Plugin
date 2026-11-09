@@ -149,12 +149,11 @@ final class Admin {
 		if ( ! Core\Crypto::native() ) {
 			echo '<div class="notice notice-warning"><p><strong>' . esc_html__( 'Backups work, but slowly.', 'bastion-backup' ) . '</strong> ' . esc_html(
 				sprintf(
-					/* translators: 1: PHP version, 2: php.ini path */
-					__( 'This site\'s PHP (%1$s) does not have the sodium extension loaded, so the encryption uses WordPress\'s built-in copy of it, which is about 1,000 times slower (roughly 25 MB a minute). Turn sodium on for this exact PHP version (cPanel: Select PHP Version → Extensions → sodium; check MultiPHP Manager shows the same version for this site), or in %2$s change ;extension=sodium to extension=sodium, then reload.', 'bastion-backup' ),
-					PHP_VERSION,
-					(string) php_ini_loaded_file() ?: 'php.ini'
+					/* translators: %s: PHP version */
+					__( 'The PHP that runs this site (%s) does not have the sodium extension loaded, so the encryption uses WordPress\'s built-in copy of it, about 1,000 times slower (roughly 25 MB a minute).', 'bastion-backup' ),
+					PHP_VERSION
 				)
-			) . '</p></div>';
+			) . '</p><p>' . esc_html( ServerCheck::sodiumAdvice() ) . ' ' . wp_kses( sprintf( /* translators: %s: link */ __( 'See <a href="%s">Settings → Server check</a> for what this site\'s PHP has loaded.', 'bastion-backup' ), esc_url( self::url( 'settings' ) . '#bbk-server' ) ), array( 'a' => array( 'href' => true ) ) ) . '</p></div>';
 		}
 		if ( Storage::publicPath() ) {
 			echo '<div class="notice notice-info"><p>' . esc_html__( 'Backups are stored inside the website\'s folder, protected by deny rules and an unguessable name. For the strongest setup, define BASTION_BACKUP_STORAGE in wp-config.php as a folder outside the website (see Settings).', 'bastion-backup' ) . '</p></div>';
@@ -431,6 +430,23 @@ final class Admin {
 		echo '</tbody></table>';
 		submit_button( __( 'Save', 'bastion-backup' ) );
 		echo '</form>';
+		self::panel(
+			__( 'Server check', 'bastion-backup' ),
+			esc_html__( 'What the PHP that runs this site actually has. A hosting panel can show settings for another PHP version or build.', 'bastion-backup' ),
+			static function (): void {
+				echo '<table class="widefat striped bbk-server"><tbody>';
+				foreach ( ServerCheck::rows() as [ $label, $value, $state ] ) {
+					$badge = array( 'ok' => '<span class="bbk-badge ok">' . esc_html__( 'OK', 'bastion-backup' ) . '</span>', 'warn' => '<span class="bbk-badge warn">' . esc_html__( 'Slow', 'bastion-backup' ) . '</span>', 'bad' => '<span class="bbk-badge bad">' . esc_html__( 'Needs fixing', 'bastion-backup' ) . '</span>' )[ $state ] ?? '';
+					printf( '<tr><th scope="row">%s</th><td><code>%s</code></td><td>%s</td></tr>', esc_html( $label ), esc_html( $value ), $badge ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- fixed markup.
+				}
+				echo '</tbody></table>';
+				if ( ! Core\Crypto::native() ) {
+					echo '<p class="description">' . esc_html( ServerCheck::sodiumAdvice() ) . '</p>';
+				}
+			},
+			'',
+			'bbk-server'
+		);
 		self::panel(
 			__( 'Stronger setup (wp-config.php)', 'bastion-backup' ),
 			'',
