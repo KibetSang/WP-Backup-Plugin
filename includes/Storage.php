@@ -2,6 +2,9 @@
 /**
  * Protected on-disk storage for archives, job state, temp files and logs.
  *
+ * @package BastionBackup
+ *
+ *
  * Default location: wp-content/bastion-backups-<random>/ (unguessable name, plus
  * .htaccess / web.config / index.php deny rules). For maximum safety define
  * BASTION_BACKUP_STORAGE in wp-config.php pointing OUTSIDE the web root.
@@ -63,6 +66,11 @@ final class Storage {
 		}
 	}
 
+	/** True when backups sit inside the website's folder (protected by deny rules, but outside is stronger). */
+	public static function publicPath(): bool {
+		return null !== self::relativeToAbspath();
+	}
+
 	/** Relative path (from ABSPATH) of the storage dir, for backup exclusion. */
 	public static function relativeToAbspath(): ?string {
 		$abs  = wp_normalize_path( trailingslashit( ABSPATH ) );
@@ -83,13 +91,20 @@ final class Storage {
 	public static function localArchives(): array {
 		$out = array();
 		foreach ( (array) glob( self::dir( 'archives' ) . '/*.bbk' ) as $f ) {
+			if ( ! Destinations\Registry::isOurs( basename( $f ) ) ) {
+				continue;
+			}
 			$out[] = array(
 				'name' => basename( $f ),
 				'size' => (int) filesize( $f ),
 				'time' => (int) filemtime( $f ),
 			);
 		}
-		usort( $out, static fn( $a, $b ) => $b['time'] <=> $a['time'] );
+		// Newest first, by the time in the name (file times change when copied between servers).
+		usort( $out, static fn( $a, $b ) => strcmp( substr( $b['name'], -26 ), substr( $a['name'], -26 ) ) );
+		foreach ( $out as &$o ) {
+			$o['time'] = Destinations\Registry::timeFromName( $o['name'] ) ?: $o['time'];
+		}
 		return $out;
 	}
 

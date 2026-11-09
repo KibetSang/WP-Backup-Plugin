@@ -1,13 +1,12 @@
 <?php
 /**
- * Encrypted secret storage (passphrase, OAuth tokens, S3 keys).
+ * Encrypted storage for destination secrets (OAuth tokens, client secrets, file server passwords and keys).
  *
- * Secrets are stored as a single libsodium secretbox blob in wp_options. The key is
- * derived from BASTION_BACKUP_SECRET (if defined in wp-config.php — recommended) or
- * from the WordPress auth salts. A database dump alone therefore never reveals them.
+ * One libsodium secretbox blob in a non-autoloaded option. Its key comes from BASTION_BACKUP_SECRET in wp-config.php
+ * (recommended), else the WordPress salts, else a random key file in the storage folder, so a copy of the database
+ * alone never reveals them. The backup key's secret half is never stored at all (Keys).
  *
- * Strongest setup: define BASTION_BACKUP_PASSPHRASE in wp-config.php, so the archive
- * passphrase never touches the database at all.
+ * @package BastionBackup
  */
 
 namespace BastionBackup;
@@ -67,16 +66,7 @@ final class Vault {
 		self::$cache = null;
 	}
 
-	/** Returns [passphrase, source] where source is 'constant' | 'vault' | ''. */
-	public static function passphrase(): array {
-		if ( defined( 'BASTION_BACKUP_PASSPHRASE' ) && '' !== (string) BASTION_BACKUP_PASSPHRASE ) {
-			return array( (string) BASTION_BACKUP_PASSPHRASE, 'constant' );
-		}
-		$p = (string) self::get( 'passphrase', '' );
-		return array( $p, '' === $p ? '' : 'vault' );
-	}
-
-	/** Seal/unseal short-lived values (e.g. a restore passphrase inside job state). */
+	/** Seal/unseal short-lived values (the backup key a restore was given, inside its job state). */
 	public static function seal( string $plain ): string {
 		return Crypto::seal( $plain, Crypto::subkey( self::key(), 'job-state' ) );
 	}
@@ -84,7 +74,7 @@ final class Vault {
 	public static function unseal( string $blob ): string {
 		$v = Crypto::open( $blob, Crypto::subkey( self::key(), 'job-state' ) );
 		if ( null === $v ) {
-			throw new Core\BackupException( 'Cannot decrypt job secret (did the WordPress salts change?).' );
+			throw new Core\BackupException( 'Cannot read the key saved with this job (did the WordPress salts change?). Start the restore again.' );
 		}
 		return $v;
 	}

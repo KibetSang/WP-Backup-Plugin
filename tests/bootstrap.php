@@ -8,3 +8,4 @@ declare(strict_types=1);
 
 require __DIR__ . '/bootstrap-core.php';
 require __DIR__ . '/Support/wp-stubs.php';
+require __DIR__ . '/Support/SiteCase.php';

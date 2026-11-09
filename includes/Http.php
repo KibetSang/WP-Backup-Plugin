@@ -1,7 +1,9 @@
 <?php
 /**
- * Thin wrapper around the WordPress HTTP API with TLS verification forced on,
- * retries with exponential backoff for 429/5xx and transient network errors.
+ * Thin wrapper around the WordPress HTTP API: HTTPS only, certificates always checked, bounded retries with backoff
+ * that honours Retry-After (never sleeping past the step's deadline). Never logs tokens, keys or signed URLs.
+ *
+ * @package BastionBackup
  */
 
 namespace BastionBackup;
@@ -12,17 +14,20 @@ defined( 'ABSPATH' ) || exit;
 
 final class Http {
 
-	/** @return array{code:int, headers:array<string,string>, body:string} */
-	public static function request( string $method, string $url, array $headers = array(), ?string $body = null, int $timeout = 120, int $tries = 4 ): array {
+	/**
+	 * @param array<string,string> $headers
+	 * @return array{code:int, headers:array<string,string>, body:string}
+	 */
+	public static function request( string $method, string $url, array $headers = array(), ?string $body = null, int $timeout = 120, int $tries = 4, int $redirects = 0, ?float $deadline = null ): array {
 		if ( ! str_starts_with( $url, 'https://' ) ) {
-			throw new BackupException( 'Refusing non-HTTPS request.' );
+			throw new BackupException( 'Refusing a request that is not over HTTPS.' );
 		}
 		$args = array(
 			'method'      => $method,
 			'headers'     => $headers,
 			'timeout'     => $timeout,
 			'sslverify'   => true,
-			'redirection' => 3,
+			'redirection' => $redirects,
 			'user-agent'  => 'BastionBackup/' . BASTION_BACKUP_VERSION . '; WordPress',
 		);
 		if ( null !== $body ) {
@@ -33,20 +38,21 @@ final class Http {
 			++$attempt;
 			$res = wp_remote_request( $url, $args );
 			if ( is_wp_error( $res ) ) {
-				if ( $attempt >= $tries ) {
-					throw new BackupException( 'HTTP error: ' . $res->get_error_message() );
+				if ( $attempt >= $tries || ! self::pause( 2 ** $attempt, $deadline ) ) {
+					throw new BackupException( 'Network error: ' . $res->get_error_message() );
 				}
-				sleep( min( 30, 2 ** $attempt ) );
 				continue;
 			}
 			$code = (int) wp_remote_retrieve_response_code( $res );
 			if ( ( 429 === $code || $code >= 500 ) && $attempt < $tries ) {
 				$retry = (int) wp_remote_retrieve_header( $res, 'retry-after' );
-				sleep( max( 1, min( 30, $retry ?: 2 ** $attempt ) ) );
-				continue;
+				if ( self::pause( max( 1, $retry ?: 2 ** $attempt ), $deadline ) ) {
+					continue;
+				}
 			}
 			$hdrs = array();
-			foreach ( (array) wp_remote_retrieve_headers( $res )->getAll() as $k => $v ) {
+			$raw  = wp_remote_retrieve_headers( $res );
+			foreach ( ( is_object( $raw ) && method_exists( $raw, 'getAll' ) ? $raw->getAll() : (array) $raw ) as $k => $v ) {
 				$hdrs[ strtolower( (string) $k ) ] = is_array( $v ) ? (string) end( $v ) : (string) $v;
 			}
 			return array(
@@ -57,13 +63,29 @@ final class Http {
 		}
 	}
 
+	/** Waits before a retry, unless that would run past the deadline (then the job simply resumes next step). */
+	private static function pause( int $seconds, ?float $deadline ): bool {
+		$seconds = min( 30, $seconds );
+		if ( null !== $deadline && microtime( true ) + $seconds > $deadline ) {
+			return false;
+		}
+		sleep( $seconds );
+		return true;
+	}
+
+	/** @param array{body:string} $res */
 	public static function json( array $res ): array {
 		$d = json_decode( $res['body'], true );
 		return is_array( $d ) ? $d : array();
 	}
 
+	/** @param array{code:int, body:string} $res */
 	public static function fail( string $what, array $res ): BackupException {
-		$msg = substr( preg_replace( '/\s+/', ' ', wp_strip_all_tags( $res['body'] ) ), 0, 300 );
-		return new BackupException( sprintf( '%s failed (HTTP %d): %s', $what, $res['code'], $msg ) );
+		$d   = json_decode( $res['body'], true );
+		$msg = is_array( $d ) ? (string) ( $d['error_description'] ?? ( $d['error']['message'] ?? ( is_string( $d['error'] ?? null ) ? $d['error'] : '' ) ) ) : '';
+		if ( '' === $msg ) {
+			$msg = substr( (string) preg_replace( '/\s+/', ' ', wp_strip_all_tags( $res['body'] ) ), 0, 200 );
+		}
+		return new BackupException( sprintf( '%s failed (HTTP %d)%s', $what, $res['code'], '' !== $msg ? ': ' . $msg : '' ) );
 	}
 }

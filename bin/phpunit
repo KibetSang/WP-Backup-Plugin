@@ -1,0 +1,25 @@
+#!/usr/bin/env php
+<?php
+/**
+ * Dev only: runs PHPUnit from a vendor folder (BBK_PHPUNIT_VENDOR, or ./vendor after `composer install`) without that
+ * project's global helper functions, which could clash with WordPress's (e.g. a Laravel project's __()).
+ */
+
+$vendor = getenv( 'BBK_PHPUNIT_VENDOR' ) ?: __DIR__ . '/../vendor';
+if ( ! is_file( $vendor . '/phpunit/phpunit/phpunit' ) ) {
+	fwrite( STDERR, "PHPUnit not found. Run `composer install`, or set BBK_PHPUNIT_VENDOR to a vendor folder that has it.\n" );
+	exit( 1 );
+}
+$auto = sys_get_temp_dir() . '/bbk-phpunit-autoload-' . md5( $vendor ) . '.php';
+file_put_contents(
+	$auto,
+	'<?php require ' . var_export( $vendor . '/composer/ClassLoader.php', true ) . ';
+$l = new Composer\Autoload\ClassLoader();
+foreach ( require ' . var_export( $vendor . '/composer/autoload_psr4.php', true ) . ' as $ns => $dirs ) { $l->setPsr4( $ns, $dirs ); }
+foreach ( require ' . var_export( $vendor . '/composer/autoload_namespaces.php', true ) . ' as $ns => $dirs ) { $l->set( $ns, $dirs ); }
+$l->addClassMap( require ' . var_export( $vendor . '/composer/autoload_classmap.php', true ) . ' );
+$l->register( true );
+return $l;'
+);
+$GLOBALS['_composer_autoload_path'] = $auto;
+require $vendor . '/phpunit/phpunit/phpunit';
