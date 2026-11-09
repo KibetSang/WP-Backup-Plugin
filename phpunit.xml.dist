@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         failOnDeprecation="true"
+         failOnNotice="true"
+         failOnWarning="true"
+         failOnRisky="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true">
+    <testsuites>
+        <testsuite name="core">
+            <directory>tests/Core</directory>
+        </testsuite>
+        <testsuite name="plugin">
+            <directory>tests/Plugin</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <!-- MySQL / MariaDB for the database tests; they are skipped when it cannot be reached. -->
+        <env name="BBK_TEST_DB_HOST" value="127.0.0.1:3407"/>
+        <env name="BBK_TEST_DB_USER" value="wp"/>
+        <env name="BBK_TEST_DB_PASS" value="wp-dev-pass"/>
+        <env name="BBK_TEST_DB_NAME" value="coretest"/>
+    </php>
+</phpunit>
