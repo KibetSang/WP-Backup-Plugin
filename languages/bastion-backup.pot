@@ -6,10 +6,10 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-09 17:49+0000\n"
+"POT-Creation-Date: 2026-11-09 17:56+0000\n"
 "X-Domain: bastion-backup\n"
 
-#: bastion-backup.php:28
+#: bastion-backup.php:29
 msgid "Bastion Backup requires PHP 8.1+ with the sodium extension."
 msgstr ""
 
@@ -820,15 +820,15 @@ msgstr ""
 msgid "No such log."
 msgstr ""
 
-#: includes/Plugin.php:47
+#: includes/Plugin.php:48
 msgid "Once Weekly"
 msgstr ""
 
-#: includes/Plugin.php:102
+#: includes/Plugin.php:103
 msgid "This site is being restored from a backup. Please check back in a few minutes."
 msgstr ""
 
-#: includes/Plugin.php:103
+#: includes/Plugin.php:104
 msgid "Maintenance"
 msgstr ""
 

@@ -11,6 +11,7 @@
 .bbk-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .bbk-inline-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .bbk-inline-form > .notice { flex-basis: 100%; }
+.bbk fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .bbk-choices { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0 0 10px; }
 .bbk-choices legend { font-weight: 600; margin-bottom: 4px; width: 100%; }
 .bbk-ref, .bbk-keytext { font-family: Consolas, Monaco, monospace; }
