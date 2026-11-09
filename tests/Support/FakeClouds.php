@@ -23,12 +23,30 @@ final class FakeClouds {
 	public int $loseAnswer = 0;
 	public int $pageSize = 2;
 	public array $seen = array();
+	/** Device sign-in: 'pending' until the person allows (or 'denied'); the last token request's form. */
+	public string $device = 'pending';
+	public array $lastTokenForm = array();
 
 	public function __invoke( string $method, string $url, array $headers, string $body ): array {
 		$h = array_change_key_case( $headers );
 		$this->seen[] = $method . ' ' . preg_replace( '/\?.*/', '', $url );
+		if ( str_ends_with( (string) parse_url( $url, PHP_URL_PATH ), '/device/code' ) || str_ends_with( (string) parse_url( $url, PHP_URL_PATH ), '/devicecode' ) ) {
+			parse_str( $body, $p );
+			$ms = str_contains( $url, 'microsoftonline' );
+			return bbk_reply( 200, json_encode( array( 'device_code' => 'dev-' . $p['client_id'], 'user_code' => 'ABCD-EFGH', ( $ms ? 'verification_uri' : 'verification_url' ) => $ms ? 'https://microsoft.com/devicelogin' : 'https://www.google.com/device', 'expires_in' => 900, 'interval' => 5 ) ) );
+		}
 		if ( str_contains( $url, '/token' ) ) {
 			parse_str( $body, $p );
+			$this->lastTokenForm = $p;
+			if ( 'urn:ietf:params:oauth:grant-type:device_code' === ( $p['grant_type'] ?? '' ) ) {
+				if ( 'pending' === $this->device ) {
+					return bbk_reply( str_contains( $url, 'microsoftonline' ) ? 400 : 428, '{"error":"authorization_pending"}' );
+				}
+				if ( 'denied' === $this->device ) {
+					return bbk_reply( 400, str_contains( $url, 'microsoftonline' ) ? '{"error":"authorization_declined"}' : '{"error":"access_denied"}' );
+				}
+				return bbk_reply( 200, json_encode( array( 'access_token' => $this->access, 'refresh_token' => $this->refresh, 'expires_in' => 3600 ) ) );
+			}
 			if ( 'refresh_token' === ( $p['grant_type'] ?? '' ) ) {
 				if ( ( $p['refresh_token'] ?? '' ) !== $this->refresh ) {
 					return bbk_reply( 400, '{"error":"invalid_grant","error_description":"Token has been revoked."}' );

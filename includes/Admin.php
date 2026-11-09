@@ -287,12 +287,27 @@ final class Admin {
 			/** @var OAuthDestination $d */
 			$d     = Registry::get( $id );
 			$c     = $d->config();
-			$state = $d->isConnected() ? sprintf( /* translators: %s: account */ __( 'Connected%s.', 'bastion-backup' ), $d->account() ? ' ' . sprintf( __( 'as %s', 'bastion-backup' ), $d->account() ) : '' ) : ( $d->hasApp() ? __( 'App saved; not connected yet.', 'bastion-backup' ) : __( 'Not set up.', 'bastion-backup' ) );
+			$state = $d->isConnected() ? sprintf( /* translators: %s: account */ __( 'Connected%s.', 'bastion-backup' ), $d->account() ? ' ' . sprintf( __( 'as %s', 'bastion-backup' ), $d->account() ) : '' ) : __( 'Not connected.', 'bastion-backup' );
 			self::panel(
 				$d->label(),
 				'<span class="bbk-badge ' . ( $d->isConnected() ? 'ok' : '' ) . '">' . esc_html( $state ) . '</span>',
 				static function () use ( $d, $c, $id, $redirect ): void {
-					echo '<details class="bbk-howto"' . ( $d->hasApp() ? '' : ' open' ) . '><summary>' . esc_html__( 'How to create the app (once)', 'bastion-backup' ) . '</summary><ol>';
+					$where = 'google' === $id ? __( 'Backups go into a folder in your Google Drive. The plugin can see only the files it puts there.', 'bastion-backup' ) : __( 'Backups go into Apps → Bastion Backup in your OneDrive. The plugin can see nothing else.', 'bastion-backup' );
+					echo '<div class="bbk-dest-form" data-dest="' . esc_attr( $id ) . '">';
+					if ( $d->hasShared() ) {
+						echo '<p>' . esc_html( $where ) . '</p>';
+						echo '<p class="bbk-buttons">';
+						if ( ! $d->isConnected() ) {
+							printf( '<button type="button" class="button button-primary button-hero" data-bbk="device">%s</button> ', esc_html( sprintf( /* translators: %s: Google Drive or OneDrive */ __( 'Connect %s', 'bastion-backup' ), $d->label() ) ) );
+						} else {
+							echo '<button type="button" class="button" data-bbk="test">' . esc_html__( 'Test', 'bastion-backup' ) . '</button> ';
+							echo '<button type="button" class="button bbk-danger" data-bbk="disconnect">' . esc_html__( 'Disconnect', 'bastion-backup' ) . '</button> ';
+						}
+						echo '<span class="bbk-result" aria-live="polite"></span></p>';
+						echo '<div class="bbk-device" hidden></div>';
+					}
+					echo '</div>';
+					echo '<details class="bbk-howto"' . ( $d->hasShared() || $d->hasApp() ? '' : ' open' ) . '><summary>' . esc_html( $d->hasShared() ? __( 'Advanced: use your own app instead', 'bastion-backup' ) : __( 'Set up with your own app (once)', 'bastion-backup' ) ) . '</summary><ol>';
 					if ( 'google' === $id ) {
 						echo '<li>' . wp_kses( __( 'Open <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer">Google Cloud Console → Credentials</a> with the Google account that should hold the backups. Create a project if asked.', 'bastion-backup' ), array( 'a' => array( 'href' => true, 'target' => true, 'rel' => true ) ) ) . '</li>';
 						echo '<li>' . esc_html__( 'Enable the Google Drive API (APIs & Services → Library → Google Drive API → Enable).', 'bastion-backup' ) . '</li>';
@@ -302,21 +317,23 @@ final class Admin {
 						echo '<li>' . wp_kses( __( 'Open <a href="https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank" rel="noopener noreferrer">Microsoft Entra → App registrations</a> and press New registration.', 'bastion-backup' ), array( 'a' => array( 'href' => true, 'target' => true, 'rel' => true ) ) ) . '</li>';
 						echo '<li>' . esc_html__( 'Supported account types: personal Microsoft accounts and/or your organisation. Redirect URI: Web, the address below.', 'bastion-backup' ) . '</li>';
 						echo '<li>' . esc_html__( 'API permissions → Microsoft Graph → Delegated: Files.ReadWrite.AppFolder, offline_access, User.Read. Certificates & secrets → New client secret; copy its Value (it is shown once).', 'bastion-backup' ) . '</li>';
-						echo '<li>' . esc_html__( 'Backups go into Apps/<your app name>/<folder> in OneDrive; the app cannot see anything else.', 'bastion-backup' ) . '</li>';
 					}
-					echo '<li>' . esc_html__( 'Paste the client ID and secret here, save, then press Connect and allow access.', 'bastion-backup' ) . '</li></ol>';
-					echo '<p class="bbk-copyline"><label>' . esc_html__( 'Redirect URI', 'bastion-backup' ) . ' <input type="text" readonly class="large-text code" value="' . esc_attr( $redirect ) . '"></label> <button type="button" class="button" data-bbk="copy">' . esc_html__( 'Copy', 'bastion-backup' ) . '</button></p></details>';
+					echo '<li>' . esc_html__( 'Paste the client ID and secret here, save, then press Connect with my app and allow access.', 'bastion-backup' ) . '</li></ol>';
+					echo '<p class="bbk-copyline"><label>' . esc_html__( 'Redirect URI', 'bastion-backup' ) . ' <input type="text" readonly class="large-text code" value="' . esc_attr( $redirect ) . '"></label> <button type="button" class="button" data-bbk="copy">' . esc_html__( 'Copy', 'bastion-backup' ) . '</button></p>';
 					echo '<form class="bbk-dest-form" data-dest="' . esc_attr( $id ) . '"><table class="form-table" role="presentation"><tbody>';
 					printf( '<tr><th scope="row"><label for="bbk-%1$s-cid">%2$s</label></th><td><input id="bbk-%1$s-cid" name="client_id" class="regular-text code" value="%3$s" autocomplete="off"></td></tr>', esc_attr( $id ), esc_html__( 'Client ID', 'bastion-backup' ), esc_attr( (string) ( $c['client_id'] ?? '' ) ) );
 					printf( '<tr><th scope="row"><label for="bbk-%1$s-sec">%2$s</label></th><td><input id="bbk-%1$s-sec" name="client_secret" type="password" class="regular-text code" autocomplete="new-password" placeholder="%3$s"></td></tr>', esc_attr( $id ), esc_html__( 'Client secret', 'bastion-backup' ), esc_attr( $d->hasApp() ? '•••••••• ' . __( 'saved — type to replace', 'bastion-backup' ) : '' ) );
-					printf( '<tr><th scope="row"><label for="bbk-%1$s-folder">%2$s</label></th><td><input id="bbk-%1$s-folder" name="folder" class="regular-text" value="%3$s" placeholder="%4$s"></td></tr>', esc_attr( $id ), esc_html__( 'Folder', 'bastion-backup' ), esc_attr( (string) ( $c['folder'] ?? '' ) ), esc_attr( $d instanceof Destinations\GoogleDrive ? $d->folderName() : ( $d instanceof Destinations\OneDrive ? $d->folderName() : '' ) ) );
+					printf( '<tr><th scope="row"><label for="bbk-%1$s-folder">%2$s</label></th><td><input id="bbk-%1$s-folder" name="folder" class="regular-text" value="%3$s" placeholder="%4$s"></td></tr>', esc_attr( $id ), esc_html__( 'Folder', 'bastion-backup' ), esc_attr( (string) ( $c['folder'] ?? '' ) ), esc_attr( $d instanceof Destinations\GoogleDrive || $d instanceof Destinations\OneDrive ? $d->folderName() : '' ) );
 					if ( 'onedrive' === $id ) {
 						printf( '<tr><th scope="row"><label for="bbk-od-tenant">%s</label></th><td><input id="bbk-od-tenant" name="tenant" class="regular-text code" value="%s" placeholder="common"><p class="description">%s</p></td></tr>', esc_html__( 'Tenant', 'bastion-backup' ), esc_attr( (string) ( $c['tenant'] ?? '' ) ), esc_html__( 'common for any account, consumers for personal only, or your organisation\'s tenant ID.', 'bastion-backup' ) );
 					}
-					echo '</tbody></table><p class="bbk-buttons"><button class="button button-primary">' . esc_html__( 'Save', 'bastion-backup' ) . '</button> ';
-					echo '<button type="button" class="button" data-bbk="connect"' . ( $d->hasApp() ? '' : ' disabled' ) . '>' . esc_html( $d->isConnected() ? __( 'Connect again', 'bastion-backup' ) : __( 'Connect', 'bastion-backup' ) ) . '</button> ';
-					echo '<button type="button" class="button" data-bbk="test"' . ( $d->isConfigured() ? '' : ' disabled' ) . '>' . esc_html__( 'Test', 'bastion-backup' ) . '</button> ';
-					echo '<button type="button" class="button bbk-danger" data-bbk="disconnect"' . ( $d->isConnected() ? '' : ' disabled' ) . '>' . esc_html__( 'Disconnect', 'bastion-backup' ) . '</button> <span class="bbk-result" aria-live="polite"></span></p></form>';
+					echo '</tbody></table><p class="bbk-buttons"><button class="button">' . esc_html__( 'Save', 'bastion-backup' ) . '</button> ';
+					echo '<button type="button" class="button" data-bbk="connect"' . ( $d->hasApp() ? '' : ' disabled' ) . '>' . esc_html__( 'Connect with my app', 'bastion-backup' ) . '</button> ';
+					if ( ! $d->hasShared() ) {
+						echo '<button type="button" class="button" data-bbk="test"' . ( $d->isConfigured() ? '' : ' disabled' ) . '>' . esc_html__( 'Test', 'bastion-backup' ) . '</button> ';
+						echo '<button type="button" class="button bbk-danger" data-bbk="disconnect"' . ( $d->isConnected() ? '' : ' disabled' ) . '>' . esc_html__( 'Disconnect', 'bastion-backup' ) . '</button> ';
+					}
+					echo '<span class="bbk-result" aria-live="polite"></span></p></form></details>';
 				}
 			);
 		}

@@ -483,5 +483,10 @@ function wp_localize_script( mixed ...$a ): bool {
 function submit_button( mixed ...$a ): void {
 }
 
+// The shared "Connect" apps, as a published copy of the plugin would have them.
+define( 'BASTION_BACKUP_GOOGLE_CLIENT_ID', 'shared-google.apps.googleusercontent.com' );
+define( 'BASTION_BACKUP_GOOGLE_CLIENT_SECRET', 'GOCSPX-not-really-secret' );
+define( 'BASTION_BACKUP_ONEDRIVE_CLIENT_ID', '11111111-2222-3333-4444-555555555555' );
+
 // The plugin itself.
 require dirname( __DIR__, 2 ) . '/bastion-backup.php';

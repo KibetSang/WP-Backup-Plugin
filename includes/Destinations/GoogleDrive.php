@@ -39,6 +39,14 @@ final class GoogleDrive extends OAuthDestination {
 		return 'https://www.googleapis.com/auth/drive.file';
 	}
 
+	protected function deviceUrl(): string {
+		return 'https://oauth2.googleapis.com/device/code';
+	}
+
+	protected function sharedApp(): array {
+		return Apps::google();
+	}
+
 	protected function extraAuthParams(): array {
 		// offline + consent: Google gives a refresh token, so backups run unattended.
 		return array(

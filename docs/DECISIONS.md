@@ -1,11 +1,11 @@
 # Decisions
 
-1. **A backup key instead of a passphrase** (changes PROMPT §3 and §4.3). As in the Biosafety conference system, the
+1. **A backup key instead of a passphrase** (instead of the passphrase in the original brief). As in the Biosafety conference system, the
    site keeps only the public half of an X25519 key; the secret half is shown once as `BBK-` and 14 groups of 4
    (13 for the key, 1 check group that catches typing mistakes). A scheduled backup needs no secret on the server, and a
    break-in cannot read the backups. The passphrase format (Argon2id) stays in the core for tools and tests.
 2. **Destinations in this version: Google Drive, OneDrive and a file server (SFTP/FTPS)**, as asked by the owner.
-   S3-compatible storage and Dropbox from PROMPT §2 are left for a later version; the `Destination` interface is ready
+   S3-compatible storage and Dropbox from the original brief are left for a later version; the `Destination` interface is ready
    for them.
 3. **SFTP and FTPS through PHP's curl**, which most hosts have, rather than ext-ssh2 (rare) or ext-ftp. Plain FTP is not
    offered. SFTP requires the host key fingerprint; without it the destination is "not set up".
@@ -27,3 +27,9 @@
     real `wp_options` table on MariaDB, so restores that swap tables are tested as they behave in WordPress. A run on a
     real WordPress install (and Plugin Check, PHPCS) is still to do before release; WordPress could not be downloaded in
     the build environment.
+11. **"Connect" by signing in with a code (device sign-in), through one shared app per provider** registered by the
+    publisher (docs/SHARED-APPS.md). A redirect-based sign-in would need either every site owner to register an app
+    (each site has its own address) or a relay server of ours that sees the codes; the device flow needs neither, and
+    Google allows it for `drive.file`, Microsoft for the app folder. Site owners can still use their own apps.
+12. **When PHP is too old or sodium is off, the plugin stays inactive but keeps its menu**, and the page and an admin
+    notice say exactly what is missing (with the site's php.ini path), so it can be found and fixed.

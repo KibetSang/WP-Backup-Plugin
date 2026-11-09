@@ -21,7 +21,7 @@ final class Ajax {
 
 	private const ACTIONS = array(
 		'tick', 'backup', 'cancel', 'dismiss', 'key', 'list', 'delete', 'check', 'restore_check', 'restore_confirm',
-		'upload_begin', 'upload_piece', 'settings', 'dest_save', 'dest_connect', 'dest_disconnect', 'dest_test', 'installer',
+		'upload_begin', 'upload_piece', 'settings', 'dest_save', 'dest_connect', 'dest_device_start', 'dest_device_poll', 'dest_disconnect', 'dest_test', 'installer',
 	);
 
 	public static function init(): void {
@@ -273,6 +273,28 @@ final class Ajax {
 			throw new BackupException( 'Not an account destination.' );
 		}
 		return array( 'url' => $d->beginConnect( get_current_user_id() ) );
+	}
+
+	/** "Connect": a sign-in code for the administrator to enter at Google or Microsoft. */
+	private static function doDestDeviceStart(): array {
+		$d = self::dest();
+		if ( ! $d instanceof OAuthDestination ) {
+			throw new BackupException( 'Not an account destination.' );
+		}
+		return $d->beginDevice( get_current_user_id() );
+	}
+
+	/** Asked every few seconds while the code is shown. */
+	private static function doDestDevicePoll(): array {
+		$d = self::dest();
+		if ( ! $d instanceof OAuthDestination ) {
+			throw new BackupException( 'Not an account destination.' );
+		}
+		$state = $d->pollDevice( get_current_user_id() );
+		if ( 'connected' === $state ) {
+			Audit::log( 'destination.connected', $d->label() . ' ' . $d->account() );
+		}
+		return array( 'state' => $state, 'account' => $d->account() );
 	}
 
 	private static function doDestDisconnect(): array {

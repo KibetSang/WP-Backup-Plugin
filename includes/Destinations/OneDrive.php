@@ -44,6 +44,14 @@ final class OneDrive extends OAuthDestination {
 		return 'offline_access Files.ReadWrite.AppFolder User.Read';
 	}
 
+	protected function deviceUrl(): string {
+		return 'https://login.microsoftonline.com/' . $this->tenant() . '/oauth2/v2.0/devicecode';
+	}
+
+	protected function sharedApp(): array {
+		return Apps::onedrive();
+	}
+
 	protected function extraAuthParams(): array {
 		return array( 'response_mode' => 'query' );
 	}

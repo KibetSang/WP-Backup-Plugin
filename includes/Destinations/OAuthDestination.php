@@ -23,6 +23,12 @@ abstract class OAuthDestination implements Destination {
 
 	abstract protected function scope(): string;
 
+	/** The device sign-in endpoint ("Connect" without an app of your own). */
+	abstract protected function deviceUrl(): string;
+
+	/** @return array{id:string,secret:string} The shared app (Apps). */
+	abstract protected function sharedApp(): array;
+
 	/** @return array<string,string> */
 	protected function extraAuthParams(): array {
 		return array();
@@ -55,8 +61,29 @@ abstract class OAuthDestination implements Destination {
 		return '' !== (string) ( $this->secrets()['refresh'] ?? '' );
 	}
 
+	/** "Connect" with the shared app is offered when its ID is set. */
+	public function hasShared(): bool {
+		return '' !== $this->sharedApp()['id'];
+	}
+
+	/** Connected through the shared app ("Connect") rather than the site's own app. */
+	public function usesShared(): bool {
+		return 'shared' === ( $this->secrets()['app'] ?? '' );
+	}
+
+	/** @return array{id:string,secret:string} The app the tokens belong to: refreshes must use the same one. */
+	protected function client(): array {
+		if ( $this->usesShared() ) {
+			return $this->sharedApp();
+		}
+		return array(
+			'id'     => (string) ( $this->config()['client_id'] ?? '' ),
+			'secret' => (string) ( $this->secrets()['client_secret'] ?? '' ),
+		);
+	}
+
 	public function isConfigured(): bool {
-		return $this->hasApp() && $this->isConnected();
+		return $this->isConnected() && ( $this->usesShared() ? $this->hasShared() : $this->hasApp() );
 	}
 
 	public function account(): string {
@@ -134,6 +161,12 @@ abstract class OAuthDestination implements Destination {
 		if ( empty( $t['refresh_token'] ) ) {
 			throw new BackupException( 'The provider did not give a refresh token, so backups could not run unattended. Remove the app\'s access in your account and connect again.' );
 		}
+		$s['app'] = 'own';
+		$this->storeTokens( $s, $t );
+	}
+
+	/** Keeps new tokens (encrypted) and the account's name. */
+	private function storeTokens( array $s, array $t ): void {
 		$s['refresh'] = (string) $t['refresh_token'];
 		$s['access']  = (string) ( $t['access_token'] ?? '' );
 		$s['expires'] = time() + (int) ( $t['expires_in'] ?? 3000 );
@@ -142,9 +175,97 @@ abstract class OAuthDestination implements Destination {
 		$this->saveSecrets( $s );
 	}
 
+	/**
+	 * "Connect", step 1: asks for a sign-in code. The administrator enters it at the provider's page and allows access;
+	 * the device code stays on the server, bound to that administrator, for as long as the provider allows.
+	 *
+	 * @return array{code:string,url:string,interval:int,expires_in:int}
+	 */
+	public function beginDevice( int $userId ): array {
+		$app = $this->sharedApp();
+		if ( '' === $app['id'] ) {
+			throw new BackupException( 'Connect with your own app below: the shared app is not set up in this copy of the plugin.' );
+		}
+		$res = Http::request( 'POST', $this->deviceUrl(), array( 'Content-Type' => 'application/x-www-form-urlencoded' ), http_build_query( array( 'client_id' => $app['id'], 'scope' => $this->scope() ), '', '&' ), 30, 2 );
+		$d   = Http::json( $res );
+		if ( 200 !== $res['code'] || empty( $d['device_code'] ) || empty( $d['user_code'] ) ) {
+			throw Http::fail( 'Starting the sign-in with ' . $this->label(), $res );
+		}
+		$url = (string) ( $d['verification_url'] ?? $d['verification_uri'] ?? '' );
+		if ( ! str_starts_with( $url, 'https://' ) ) {
+			throw new BackupException( 'The provider gave an unexpected sign-in address.' );
+		}
+		$life = max( 60, min( 1800, (int) ( $d['expires_in'] ?? 900 ) ) );
+		set_transient(
+			'bbk_device_' . $this->id() . '_' . $userId,
+			array(
+				'dc'       => (string) $d['device_code'],
+				'interval' => max( 2, (int) ( $d['interval'] ?? 5 ) ),
+				'next'     => time(),
+				'exp'      => time() + $life,
+			),
+			$life
+		);
+		return array(
+			'code'       => (string) $d['user_code'],
+			'url'        => $url,
+			'interval'   => max( 2, (int) ( $d['interval'] ?? 5 ) ),
+			'expires_in' => $life,
+		);
+	}
+
+	/** "Connect", step 2, asked every few seconds: "pending" until the administrator allows access, then "connected". */
+	public function pollDevice( int $userId ): string {
+		$key = 'bbk_device_' . $this->id() . '_' . $userId;
+		$t   = get_transient( $key );
+		if ( ! is_array( $t ) || (int) $t['exp'] < time() ) {
+			delete_transient( $key );
+			throw new BackupException( 'The sign-in code has expired. Press Connect again.' );
+		}
+		if ( time() < (int) $t['next'] ) {
+			return 'pending'; // Never faster than the provider asked.
+		}
+		$app  = $this->sharedApp();
+		$args = array(
+			'grant_type'  => 'urn:ietf:params:oauth:grant-type:device_code',
+			'device_code' => (string) $t['dc'],
+			'client_id'   => $app['id'],
+		);
+		if ( '' !== $app['secret'] ) {
+			$args['client_secret'] = $app['secret'];
+		}
+		$res = Http::request( 'POST', $this->tokenUrl(), array( 'Content-Type' => 'application/x-www-form-urlencoded' ), http_build_query( $args, '', '&' ), 30, 2 );
+		$d   = Http::json( $res );
+		if ( 200 === $res['code'] && ! empty( $d['refresh_token'] ) ) {
+			delete_transient( $key );
+			$s        = $this->secrets();
+			$s['app'] = 'shared';
+			$this->storeTokens( $s, $d );
+			return 'connected';
+		}
+		$err = (string) ( $d['error'] ?? '' );
+		if ( 'authorization_pending' === $err || 'slow_down' === $err ) {
+			$t['interval'] += 'slow_down' === $err ? 5 : 0;
+			$t['next']      = time() + (int) $t['interval'];
+			set_transient( $key, $t, max( 60, (int) $t['exp'] - time() ) );
+			return 'pending';
+		}
+		delete_transient( $key );
+		if ( in_array( $err, array( 'access_denied', 'authorization_declined' ), true ) ) {
+			throw new BackupException( 'Access was not allowed, so ' . $this->label() . ' is not connected.' );
+		}
+		if ( 'expired_token' === $err ) {
+			throw new BackupException( 'The sign-in code has expired. Press Connect again.' );
+		}
+		if ( 200 === $res['code'] ) {
+			throw new BackupException( 'The provider did not give a refresh token, so backups could not run unattended.' );
+		}
+		throw Http::fail( 'Connecting ' . $this->label(), $res );
+	}
+
 	public function disconnect(): void {
 		$s = $this->secrets();
-		unset( $s['refresh'], $s['access'], $s['expires'], $s['account'] );
+		unset( $s['refresh'], $s['access'], $s['expires'], $s['account'], $s['app'] );
 		$this->saveSecrets( $s );
 		$c = $this->config();
 		unset( $c['folder_id'] );
@@ -170,9 +291,8 @@ abstract class OAuthDestination implements Destination {
 				array(
 					'grant_type'    => 'refresh_token',
 					'refresh_token' => (string) $s['refresh'],
-					'client_id'     => (string) ( $this->config()['client_id'] ?? '' ),
-					'client_secret' => (string) ( $s['client_secret'] ?? '' ),
-				),
+					'client_id'     => $this->client()['id'],
+				) + ( '' !== $this->client()['secret'] ? array( 'client_secret' => $this->client()['secret'] ) : array() ),
 				'',
 				'&'
 			),

@@ -353,7 +353,7 @@
 			return;
 		}
 		const what = b.dataset.bbk;
-		const form = b.closest( 'form' );
+		const form = b.closest( '[data-dest]' ) || b.closest( 'form' );
 		const out = form ? $( '.bbk-result', form ) : null;
 		try {
 			if ( what === 'cancel' ) {
@@ -405,6 +405,8 @@
 			} else if ( what === 'connect' ) {
 				const r = await api( 'dest_connect', { dest: form.dataset.dest } );
 				location.href = r.url;
+			} else if ( what === 'device' ) {
+				await connectDevice( b, form, out );
 			} else if ( what === 'test' ) {
 				flash( out, D.i18n.working, true );
 				const r = await api( 'dest_test', { dest: form.dataset.dest } );
@@ -424,6 +426,43 @@
 			}
 		}
 	} );
+
+	/* ---------------- "Connect": sign in at Google or Microsoft with a code ---------------- */
+
+	async function connectDevice( btn, box, out ) {
+		const dest = box.dataset.dest;
+		const label = ( D.dests[ dest ] || {} ).label || dest;
+		btn.disabled = true;
+		const r = await api( 'dest_device_start', { dest } );
+		const dv = $( '.bbk-device', box );
+		dv.innerHTML = '<div class="notice notice-info inline"><ol class="bbk-steps">' +
+			'<li>Open <a href="' + h( r.url ) + '" target="_blank" rel="noopener noreferrer">' + h( r.url.replace( /^https:\/\//, '' ) ) + '</a> and sign in with the account that should keep the backups.</li>' +
+			'<li>Enter this code: <code class="bbk-keytext bbk-devcode">' + h( r.code ) + '</code> <button type="button" class="button button-small" id="bbk-dev-copy">Copy</button></li>' +
+			'<li>Allow access. This page notices by itself.</li></ol>' +
+			'<p class="bbk-devwait"><span class="spinner is-active"></span> Waiting for you to allow access…</p></div>';
+		dv.hidden = false;
+		btn.hidden = true;
+		$( '#bbk-dev-copy' ).onclick = () => navigator.clipboard.writeText( r.code ).then( () => notice( D.i18n.copied, 'success' ) );
+		window.open( r.url, '_blank', 'noopener' );
+		const until = Date.now() + r.expires_in * 1000;
+		try {
+			while ( Date.now() < until ) {
+				await new Promise( ( z ) => setTimeout( z, r.interval * 1000 ) );
+				const p = await api( 'dest_device_poll', { dest } );
+				if ( p.state === 'connected' ) {
+					dv.innerHTML = '<div class="notice notice-success inline"><p>' + h( label ) + ' is connected' + ( p.account ? ' as ' + h( p.account ) : '' ) + '.</p></div>';
+					setTimeout( () => location.reload(), 900 );
+					return;
+				}
+			}
+			throw new Error( 'The sign-in code has expired. Press Connect again.' );
+		} catch ( e ) {
+			dv.hidden = true;
+			btn.hidden = false;
+			btn.disabled = false;
+			throw e;
+		}
+	}
 
 	/* ---------------- Forms ---------------- */
 

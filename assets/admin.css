@@ -61,3 +61,6 @@
 	.bbk-rowbtns { white-space: normal; }
 	.bbk-copyline { flex-direction: column; align-items: stretch; }
 }
+.bbk-device { margin: 8px 0 0; }
+.bbk-devcode { font-size: 20px; letter-spacing: 2px; padding: 4px 10px; }
+.bbk-devwait .spinner { float: none; margin: 0 6px 0 0; vertical-align: middle; }

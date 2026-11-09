@@ -8,7 +8,7 @@ declare(strict_types=1);
 error_reporting( E_ALL );
 set_error_handler(
 	static function ( int $no, string $msg, string $file, int $line ): bool {
-		// Fail on every notice, warning and deprecation (PROMPT §1): nothing is silently tolerated.
+		// Fail on every notice, warning and deprecation: nothing is silently tolerated.
 		if ( ! ( error_reporting() & $no ) ) {
 			return false;
 		}

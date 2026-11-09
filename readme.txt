@@ -1,5 +1,5 @@
 === Bastion Backup ===
-Contributors: wingustar
+Contributors: kibetsang
 Tags: backup, restore, migration, google drive, onedrive
 Requires at least: 6.4
 Tested up to: 7.1
@@ -18,7 +18,7 @@ Bastion Backup makes a complete backup of your WordPress site: WordPress itself,
 
 **Any size, any host.** Backups and restores run in short steps (20 seconds by default) that save their place, with memory near 32 MB whatever the size of the site. Tested at 10 GB with memory_limit=128M. They carry on in the background when you close the page, and WP-CLI runs them without a browser.
 
-**Copies elsewhere.** After each backup a copy goes to Google Drive (access only to files this plugin makes), OneDrive (the plugin's own app folder only) or your own server over SFTP or FTPS. Uploads resume where they stopped. The newest N are kept in each place; only backups this plugin made are ever deleted.
+**Copies elsewhere.** Press Connect and sign in: after each backup a copy goes to Google Drive (access only to files this plugin makes), OneDrive (the plugin's own app folder only) or your own server over SFTP or FTPS. Uploads resume where they stopped. The newest N are kept in each place; only backups this plugin made are ever deleted.
 
 **Safe restores.** A restore first reads and checks every byte of the backup and changes nothing unless all of it is intact. You confirm with your WordPress password and the word RESTORE. The database is loaded into temporary tables and swapped in at once at the end; files are written beside the old ones and renamed into place. wp-config.php, this plugin and its backups are never overwritten from the dashboard.
 
@@ -36,19 +36,15 @@ Bastion Backup makes a complete backup of your WordPress site: WordPress itself,
 * `define( 'BASTION_BACKUP_STORAGE', '/home/account/bastion-backups' );` keeps backups and working files outside the website.
 * `define( 'BASTION_BACKUP_SECRET', '…64 or more random characters…' );` encrypts the saved Google, Microsoft and file server credentials with this value instead of the WordPress salts.
 
-= Google Drive =
+= Google Drive and OneDrive =
 
-1. In Google Cloud Console (APIs & Services), create a project and enable the Google Drive API.
-2. OAuth consent screen: External (or Internal on Google Workspace). Add only the scope `…/auth/drive.file`. Publish it to Production, or test users lose access after 7 days.
-3. Credentials → Create credentials → OAuth client ID → Web application. Under Authorized redirect URIs, paste the address shown on the Destinations tab (it ends in `/wp-json/bastion-backup/v1/oauth`).
-4. Paste the client ID and secret in Bastion Backup → Destinations → Google Drive, Save, press Connect and allow access. Then press Test.
+1. Bastion Backup → Destinations → **Connect Google Drive** (or **Connect OneDrive**).
+2. A sign-in page opens (google.com/device or microsoft.com/devicelogin). Sign in with the account that should keep the backups and enter the code the plugin shows.
+3. Allow access. The Destinations page notices by itself. Press Test, then choose it under Schedule & retention.
 
-= OneDrive =
+Google Drive gives the plugin access only to the files it makes; OneDrive only to its own app folder (Apps → Bastion Backup). Tokens go straight from Google or Microsoft to your site.
 
-1. In Microsoft Entra → App registrations → New registration. Choose who may sign in (personal accounts, your organisation, or both). Redirect URI: Web, the address shown on the Destinations tab.
-2. API permissions → Microsoft Graph → Delegated: `Files.ReadWrite.AppFolder`, `offline_access`, `User.Read`.
-3. Certificates & secrets → New client secret. Copy its value straight away.
-4. Paste the client ID and secret in Destinations → OneDrive (tenant `common`, `consumers` or your tenant ID), Save, Connect, Test. Backups go into Apps/<app name>/<folder>.
+Prefer your own Google or Microsoft app? Open "Advanced: use your own app instead" on the Destinations tab and follow its steps.
 
 = File server (SFTP or FTPS) =
 

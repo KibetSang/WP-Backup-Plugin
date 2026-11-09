@@ -1,6 +1,6 @@
 <?php
 /**
- * The 10 GB benchmark (PROMPT §5): a synthetic site of one 4 GB video, five 1 GB archives, 50,000 small files and a
+ * The 10 GB benchmark: a synthetic site of one 4 GB video, five 1 GB archives, 50,000 small files and a
  * 1 GB database is backed up, checked and restored with memory_limit=128M, in 20-second steps (each step a separate
  * Jobs::run, as separate requests would be). Then every file and every row is compared.
  *

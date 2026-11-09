@@ -18,7 +18,7 @@ foreach ( $files as $f ) {
 	}
 }
 $esc = static fn( string $s ): string => addcslashes( $s, "\"\\\n" );
-$out = "# Copyright (C) " . gmdate( 'Y' ) . " Wingustar Solutions Ltd\n# This file is distributed under the GPL-2.0-or-later.\nmsgid \"\"\nmsgstr \"\"\n\"Project-Id-Version: Bastion Backup 1.0.0\\n\"\n\"MIME-Version: 1.0\\n\"\n\"Content-Type: text/plain; charset=UTF-8\\n\"\n\"Content-Transfer-Encoding: 8bit\\n\"\n\"POT-Creation-Date: " . gmdate( 'Y-m-d H:i' ) . "+0000\\n\"\n\"X-Domain: bastion-backup\\n\"\n\n";
+$out = "# Copyright (C) " . gmdate( 'Y' ) . " Kibet Sang\n# This file is distributed under the GPL-2.0-or-later.\nmsgid \"\"\nmsgstr \"\"\n\"Project-Id-Version: Bastion Backup 1.0.0\\n\"\n\"MIME-Version: 1.0\\n\"\n\"Content-Type: text/plain; charset=UTF-8\\n\"\n\"Content-Transfer-Encoding: 8bit\\n\"\n\"POT-Creation-Date: " . gmdate( 'Y-m-d H:i' ) . "+0000\\n\"\n\"X-Domain: bastion-backup\\n\"\n\n";
 foreach ( $strings as $s => $refs ) {
 	$out .= '#: ' . implode( ' ', array_slice( $refs, 0, 4 ) ) . "\n";
 	if ( str_contains( $s, '%' ) ) {

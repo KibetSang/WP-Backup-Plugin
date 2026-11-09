@@ -48,7 +48,7 @@ flowchart LR
 
 - **Header:** public values only, `kdf = "x25519-seal"`, `kid` (key ID), `wk` = the random 32-byte data key sealed to the
   backup key's public half (`sodium_crypto_box_seal`), `ss` = the secretstream header, `frame`, `created`, `gen`.
-  Passphrase archives (`kdf = "argon2id13"`, PROMPT §3) are still read and written by the core for tools and tests.
+  Passphrase archives (`kdf = "argon2id13"`) are still read and written by the core for tools and tests.
 - **Frames:** XChaCha20-Poly1305 secretstream, at most 2 MiB of plaintext, deflated when that saves 3 % or more
   (never for media and archives). The SHA-256 of the header is the associated data of every frame, so the header
   cannot be swapped. The last frame carries `TAG_FINAL`: a cut-off archive is always detected.
